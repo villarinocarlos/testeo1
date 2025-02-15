@@ -1,0 +1,72 @@
+<!-- documentos/templates/login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoCenter - Iniciar Sesión</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; height: 100vh; display: flex; }
+        .left-panel { background-color: #0A2647; color: white; width: 35%; padding: 4rem; display: flex; flex-direction: column; justify-content: center; }
+        .right-panel { width: 65%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f0f4f8; padding: 2rem; }
+        form { width: 100%; max-width: 400px; }
+        input, button { width: 100%; padding: 0.9rem; margin-bottom: 1rem; font-size: 0.95rem; border-radius: 5px; }
+        button { font-weight: bold; color: white; background-color: #2F9CF1; border: none; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #1D7ABF; }
+        .error-message { color: red; font-size: 0.85rem; margin-bottom: 1rem; text-align: left; }
+    </style>
+    <script>
+        function validarFormulario(event) {
+            const correo = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerText = '';
+
+            if (!correo || !password) {
+                errorContainer.innerText = '⚠️ Los campos no pueden estar vacíos.';
+                event.preventDefault();
+                return;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mensajes = document.getElementById('django-messages');
+            if (mensajes && mensajes.innerText.includes('Inicio de sesión exitoso')) {
+                setTimeout(() => {
+                    window.location.replace('/dashboard/');
+                }, 500);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="left-panel">
+        <h1>DoCenter</h1>
+        <h2>Beneficios de la Plataforma</h2>
+        <ul>
+            <li>✔️ Gestión eficiente de docentes</li>
+            <li>✔️ Acceso seguro y rápido</li>
+            <li>✔️ Reportes detallados</li>
+            <li>✔️ Fácil de usar</li>
+        </ul>
+    </div>
+    <div class="right-panel">
+        <h2>Iniciar Sesión</h2>
+        <form method="POST" action="{% url 'documentos:login' %}" onsubmit="validarFormulario(event)">
+            {% csrf_token %}
+            <input id="email" name="correo" type="email" placeholder="Correo Electrónico" required>
+            <input id="password" name="contraseña" type="password" placeholder="Contraseña" required>
+            <div id="error-container" class="error-message"></div>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        {% if messages %}
+            <div id="django-messages" class="error-message">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>DoCenter - Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Descomenta si deseas usar íconos de Font Awesome (ajusta versión según tu caso):
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  -->
+
+  <style>
+    /* ========== RESET & TIPOGRAFÍA ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #ffffff; /* Fondo claro por defecto */
+      color: #333;
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+      overflow-x: hidden; /* Evita scroll horizontal al colapsar sidebar */
+    }
+
+    /* ========== MODO OSCURO ========== */
+    body.dark-mode {
+      background-color: #0A2647; /* Fondo azul oscuro */
+      color: #fff;
+    }
+
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100vh;
+      background-color: #0A2647; /* Azul principal */
+      color: #fff;
+      padding: 1rem;
+      transition: transform 0.3s;
+      z-index: 999; /* Para que quede por encima del contenido */
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .sidebar li:hover {
+      background-color: #07325F;
+    }
+    .sidebar li i {
+      margin-right: 0.5rem;
+    }
+
+    /* SIDEBAR colapsado */
+    .sidebar.collapsed {
+      transform: translateX(-250px);
+    }
+
+    /* ========== MAIN-CONTAINER (TOPBAR + CONTENT) ========== */
+    .main-container {
+      margin-left: 250px; /* Espacio para la sidebar */
+      transition: margin-left 0.3s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-container.sidebar-collapsed {
+      margin-left: 0;
+    }
+
+    /* ========== TOPBAR ========== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #f5f5f5; /* Barra superior clara */
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #ddd;
+      transition: background-color 0.3s;
+    }
+    body.dark-mode .topbar {
+      background-color: #052135; /* Azul oscuro en modo oscuro */
+      border-bottom-color: #07325F;
+    }
+
+    /* Botón para colapsar sidebar (hamburguesa) */
+    .toggle-sidebar-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-right: 1rem;
+      color: #333;
+      transition: color 0.3s;
+    }
+    body.dark-mode .toggle-sidebar-btn {
+      color: #fff;
+    }
+
+    /* Buscador (opcional) */
+    .search-bar {
+      position: relative;
+      max-width: 350px;
+      flex: 1;
+      margin-right: 2rem;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 0.5rem 2.2rem 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+    body.dark-mode .search-bar input {
+      background-color: #07325F;
+      color: #fff;
+      border-color: #055;
+    }
+    .search-bar i {
+      position: absolute;
+      right: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      cursor: pointer;
+    }
+
+    /* Sección derecha de la topbar */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Rol de usuario (sin correo) */
+    .user-role {
+      font-weight: bold;
+    }
+
+    /* Botón modo oscuro (ícono de foco) */
+    .dark-mode-toggle {
+      background-color: #2F9CF1;
+      border: none;
+      color: #fff;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+    .dark-mode-toggle:hover {
+      background-color: #1D7ABF;
+    }
+    body.dark-mode .dark-mode-toggle {
+      background-color: #07325F;
+    }
+    body.dark-mode .dark-mode-toggle:hover {
+      background-color: #052135;
+    }
+
+    /* ========== CONTENT (Main + Right Panel) ========== */
+    .content {
+      display: flex;
+      flex: 1;
+      overflow-y: auto;
+      background-color: #fff;
+      transition: background-color 0.3s;
+    }
+    body.dark-mode .content {
+      background-color: #052135;
+    }
+
+    /* ========== MAIN CONTENT (izquierda) ========== */
+    .main-content {
+      flex: 2;
+      padding: 2rem;
+    }
+
+    /* Pequeño encabezado y estadísticas */
+    .main-header {
+      margin-bottom: 2rem;
+    }
+    .main-header h2 {
+      font-size: 1.8rem;
+      color: #0A2647;
+      margin-bottom: 0.5rem;
+    }
+    body.dark-mode .main-header h2 {
+      color: #fff;
+    }
+    .main-header p {
+      color: #555;
+    }
+    body.dark-mode .main-header p {
+      color: #ccc;
+    }
+
+    /* Contenedor de estadísticas (pequeñas tarjetas) */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+    .stat-box {
+      background-color: #f8f8f8;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    .stat-box h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #0A2647;
+    }
+    .stat-box p {
+      font-size: 0.9rem;
+      color: #333;
+    }
+    body.dark-mode .stat-box {
+      background-color: #07325F;
+      box-shadow: none;
+    }
+    body.dark-mode .stat-box h4,
+    body.dark-mode .stat-box p {
+      color: #fff;
+    }
+
+    /* ========== RIGHT PANEL (Anuncios) ========== */
+    .right-panel {
+      width: 300px;
+      border-left: 1px solid #ddd;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    body.dark-mode .right-panel {
+      background-color: #0A2647;
+      border-color: #07325F;
+    }
+    .announcement-box {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+    body.dark-mode .announcement-box {
+      background-color: #07325F;
+    }
+    .announcement-box h4 {
+      margin-bottom: 0.8rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #0A2647;
+    }
+    body.dark-mode .announcement-box h4 {
+      color: #fff;
+    }
+    .announcement-item {
+      background-color: #f5f5f5;
+      border-left: 3px solid #2F9CF1;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      transition: background-color 0.3s;
+    }
+    body.dark-mode .announcement-item {
+      background-color: #0A2647;
+      border-left-color: #1D7ABF;
+    }
+    .announcement-item p {
+      font-size: 0.85rem;
+      color: #333;
+    }
+    body.dark-mode .announcement-item p {
+      color: #fff;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 992px) {
+      .content {
+        flex-direction: column;
+      }
+      .right-panel {
+        width: 100%;
+      }
+    }
+    @media (max-width: 768px) {
+      .search-bar {
+        display: none; /* Oculta buscador en pantallas pequeñas (opcional) */
+      }
+    }
+  </style>
+
+  <script>
+    // Toggle de la barra lateral
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContainer = document.getElementById('main-container');
+      sidebar.classList.toggle('collapsed');
+      mainContainer.classList.toggle('sidebar-collapsed');
+    }
+
+    // Toggle modo oscuro
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <h2>DoCenter</h2>
+    <ul>
+      <!-- Ajusta íconos y enlaces según tu proyecto -->
+      <li><i class="fa fa-user-shield"></i> Gestión de Usuarios</li>
+      <li><i class="fa fa-chalkboard-teacher"></i> Gestión de Docentes</li>
+      <li><i class="fa fa-clock"></i> Gestión de Horarios</li>
+      <li><i class="fa fa-book"></i> Gestión de Asignaturas</li>
+      <li><i class="fa fa-user-cog"></i> Asignación de Docentes</li>
+      <li><i class="fa fa-calendar"></i> Disponibilidad</li>
+      <li><i class="fa fa-clipboard-list"></i> Calificaciones</li>
+      <li><i class="fa fa-file-alt"></i> Reportes</li>
+      <li><i class="fa fa-star"></i> Evaluaciones</li>
+      <li><i class="fa fa-handshake"></i> Propuestas</li>
+      <!-- Logout que redirige a login vía tu vista Django -->
+      <li>
+        <a href="{% url 'documentos:logout' %}" style="color: inherit; text-decoration: none;">
+          <i class="fa fa-sign-out-alt"></i> Logout
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="main-container" id="main-container">
+    
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <!-- Botón para colapsar la sidebar -->
+      <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
+      
+      <!-- Buscador (opcional) -->
+      <div class="search-bar">
+        <input type="text" placeholder="Buscar...">
+        <i class="fa fa-search"></i>
+      </div>
+
+      <!-- Sección derecha: solo el rol y el botón modo oscuro con ícono de foco -->
+      <div class="topbar-right">
+        <span class="user-role">Rol: Admin</span>
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">
+          <i class="fa fa-lightbulb"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="content">
+      <!-- Main content (izquierda) -->
+      <div class="main-content">
+        <!-- Encabezado y estadísticas -->
+        <div class="main-header">
+          <h2>Panel Principal</h2>
+          <p>Aquí podrás consultar un resumen de la información más relevante.</p>
+        </div>
+
+        <!-- Fila de estadísticas (ejemplo) -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <h4>Docentes Activos</h4>
+            <p>12</p>
+          </div>
+          <div class="stat-box">
+            <h4>Asignaciones Realizadas</h4>
+            <p>45</p>
+          </div>
+          <div class="stat-box">
+            <h4>Promedio Calificaciones</h4>
+            <p>8.7</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel derecho (Anuncios) -->
+      <div class="right-panel">
+        <div class="announcement-box">
+          <h4>Anuncios</h4>
+          <div class="announcement-item">
+            <p>El registro de nuevas asignaturas cierra el 20/06.</p>
+          </div>
+          <div class="announcement-item">
+            <p>Revisión de horarios programada para el 18/06.</p>
+          </div>
+        </div>
+
+        <div class="announcement-box">
+          <h4>Eventos</h4>
+          <div class="announcement-item">
+            <p>Capacitación en línea: 25/06 - 9:00 AM</p>
+          </div>
+          <div class="announcement-item">
+            <p>Entrega de calificaciones finales: 30/06</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
