@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Editar Usuario - InterHub{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-4 text-dark text-center">Editar Usuario</h1>
+
+      <div class="mt-2 text-center">
+        {% if messages %}
+          {% for msg in messages %}
+            {% if msg|lower == "el usuario ya está en uso." %}
+              <small class="text-danger">El usuario ya está en uso.</small>
+            {% elif msg|lower == "no cumples con los requisitos para presentar estadía." %}
+              <small class="text-danger">
+                No cumples con los requisitos para presentar estadía.
+              </small>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <form method="POST" class="user" onsubmit="return validarFormularioEdicion()">
+        {% csrf_token %}
+        <!-- Correo -->
+        <div class="form-group position-relative">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" class="form-control" id="correo" name="correo"
+                 value="{{ usuario.correo }}" required>
+          <small id="correoError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+        </div>
+
+        <!-- Contraseña (Opcional) -->
+        <div class="form-group position-relative">
+          <label for="contraseña">Nueva Contraseña <small class="text-muted">(Dejar en blanco para mantener la actual)</small></label>
+          <input type="password" class="form-control" id="contraseña" name="contraseña" placeholder="Nueva Contraseña">
+          <small id="contraseñaError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+        </div>
+
+        <!-- Rol -->
+        <div class="form-group">
+          <label for="rol">Rol de Usuario</label>
+          <select class="form-control" id="rol" name="rol" required onchange="toggleCamposAlumno()">
+            <option value="">Selecciona un rol</option>
+            <option value="Admin" {% if usuario.rol == 'Admin' %}selected{% endif %}>Admin</option>
+            <option value="Empresario" {% if usuario.rol == 'Empresario' %}selected{% endif %}>Empresario</option>
+            <option value="Alumno" {% if usuario.rol == 'Alumno' %}selected{% endif %}>Alumno</option>
+          </select>
+        </div>
+
+        <!-- Campos Alumno -->
+        <div id="camposAlumno" style="display: none;">
+          <div class="form-group position-relative">
+            <label for="creditos">Créditos (0 - 300)</label>
+            <input type="number" class="form-control" id="creditos" name="creditos"
+                   placeholder="Ej: 180" value="{{ usuario.creditos|default:'' }}">
+            <small id="creditosError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+          <div class="form-group position-relative">
+            <label for="semestre">Semestre (1 - 10)</label>
+            <input type="number" class="form-control" id="semestre" name="semestre"
+                   placeholder="Ej: 7" value="{{ usuario.semestre|default:'' }}">
+            <small id="semestreError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-4">Guardar Cambios</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleCamposAlumno() {
+    const rol = document.getElementById('rol').value;
+    const camposAlumno = document.getElementById('camposAlumno');
+    if (rol === 'Alumno') {
+      camposAlumno.style.display = 'block';
+    } else {
+      camposAlumno.style.display = 'none';
+      document.getElementById('creditos').value = '';
+      document.getElementById('semestre').value = '';
+    }
+  }
+
+  function mostrarError(campoErrorId, mensaje) {
+    const errorElem = document.getElementById(campoErrorId);
+    errorElem.innerText = mensaje;
+    errorElem.style.display = 'block';
+    setTimeout(() => {
+      errorElem.style.display = 'none';
+    }, 3000);
+  }
+
+  function validarFormularioEdicion() {
+    let valido = true;
+    document.getElementById('correoError').style.display = 'none';
+    document.getElementById('contraseñaError').style.display = 'none';
+    document.getElementById('creditosError').style.display = 'none';
+    document.getElementById('semestreError').style.display = 'none';
+
+    const correo = document.getElementById('correo').value.trim();
+    const nuevaContraseña = document.getElementById('contraseña').value.trim();
+    const rol = document.getElementById('rol').value;
+    const creditos = document.getElementById('creditos').value.trim();
+    const semestre = document.getElementById('semestre').value.trim();
+
+    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexCorreo.test(correo)) {
+      mostrarError('correoError', 'Por favor, ingresa un correo válido (ej: usuario@dominio.com).');
+      valido = false;
+    }
+
+    if (nuevaContraseña !== "") {
+      const regexPass = /^(?!.*\s)(?=.*[A-Z])(?=.*\d)[A-Za-z\d_-]{6,20}$/;
+      if (!regexPass.test(nuevaContraseña)) {
+        mostrarError('contraseñaError', 'La contraseña debe tener 6-20 caracteres, al menos 1 mayúscula y 1 dígito, y no debe contener espacios ni caracteres especiales (solo - o _).');
+        valido = false;
+      }
+    }
+
+    if (rol === 'Alumno') {
+      if (!creditos || !semestre) {
+        mostrarError('creditosError', 'Créditos y semestre son obligatorios para un Alumno.');
+        mostrarError('semestreError', 'Créditos y semestre son obligatorios para un Alumno.');
+        valido = false;
+      } else {
+        const c = parseInt(creditos);
+        const s = parseInt(semestre);
+        if (c < 180) {
+          mostrarError('creditosError', 'El alumno debe tener al menos 180 créditos.');
+          valido = false;
+        }
+        if (s < 7) {
+          mostrarError('semestreError', 'El alumno debe estar en 7° semestre o superior.');
+          valido = false;
+        }
+      }
+    }
+
+    return valido;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    toggleCamposAlumno();
+  });
+</script>
+{% endblock %}

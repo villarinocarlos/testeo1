@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}InternHub{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+
+  <style>
+    #pageContent {
+      background-color: #fff;
+      color: #000;
+      min-height: 100vh;
+      transition: background-color 0.5s, color 0.5s;
+    }
+  
+    #pageContent.dark-content {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+  
+    .navbar {
+      transition: background-color 0.5s, color 0.5s;
+      background-color: #f8f9fc !important;
+    }
+  
+    #pageContent.dark-content .navbar {
+      background-color: #1e1e1e !important;
+      color: #fff !important;
+      border-bottom: 1px solid #444;
+    }
+  
+    .navbar .nav-link .fas {
+      color: #6c757d;
+      transition: color 0.5s;
+    }
+  
+    #pageContent.dark-content .navbar .nav-link .fas {
+      color: #fff !important;
+    }
+  
+    .card {
+      transition: background-color 0.5s, color 0.5s;
+    }
+  
+    #pageContent.dark-content .card {
+      background-color: #2c2c2c;
+      color: #fff;
+      border: 1px solid #444;
+    }
+  
+    #pageContent.dark-content .btn {
+      background-color: #555 !important;
+      border-color: #555 !important;
+      color: #fff !important;
+    }
+  
+    #pageContent.dark-content .text-gray-800 {
+      color: #ccc !important;
+    }
+  
+    #pageContent.dark-content .sidebar {
+      background-color: #0A2647 !important;
+    }
+  
+    #pageContent.dark-content .toggle-dark .fas {
+      color: #fff !important;
+      transition: color 0.5s;
+    }
+  </style>
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body id="page-top">
+  
+  <div id="wrapper">
+    
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+      
+      <!-- Sidebar - Brand -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'documentos:dashboard' %}">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">InternHub</div>
+      </a>
+      <hr class="sidebar-divider my-0">
+
+      <!-- Menú con íconos personalizados -->
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:dashboard' %}">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_empresas' %}">
+          <i class="fas fa-building"></i>
+          <span>Empresas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_usuarios' %}">
+          <i class="fas fa-users"></i>
+          <span>Usuarios</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_proyectos' %}">
+          <i class="fas fa-file-alt"></i>
+          <span>Proyectos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-tools"></i>
+          <span>Seguimiento de Prácticas</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reportes</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-cogs"></i>
+          <span>Administración</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-folder-open"></i>
+          <span>Documentos</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">
+          <i class="fas fa-clipboard-list"></i>
+          <span>Logs</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:logout' %}">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </li>
+      
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      
+      <!-- Main Content -->
+      <div id="content">
+       
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+         
+          <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+            <i class="fa fa-bars"></i>
+          </button>
+
+          <div class="d-none d-sm-block ml-auto"></div>
+
+          <ul class="navbar-nav">
+            <!-- Botón para cambiar el fondo del contenido -->
+            <li class="nav-item dropdown no-arrow mx-1">
+              <button class="btn btn-link nav-link" onclick="toggleContentDarkMode()">
+                <i class="fas fa-lightbulb"></i>
+              </button>
+            </li>
+            <!-- Notificaciones -->
+            <li class="nav-item dropdown no-arrow mx-1">
+              <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-bell fa-fw"></i>
+                <span class="badge badge-danger badge-counter">3+</span>
+              </a>
+              <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                   aria-labelledby="alertsDropdown">
+                <h6 class="dropdown-header">Alerts Center</h6>
+                <a class="dropdown-item d-flex align-items-center" href="#">
+                  <div class="mr-3">
+                    <div class="icon-circle bg-primary">
+                      <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="small text-gray-500">Febrero 2025</div>
+                    <span class="font-weight-bold">¡Nueva propuesta de práctica!</span>
+                  </div>
+                </a>
+                <a class="dropdown-item text-center small text-gray-500" href="#">Ver todas las alertas</a>
+              </div>
+            </li>
+
+            <div class="topbar-divider d-none d-sm-block"></div>
+
+            <!-- Usuario y rol -->
+            <li class="nav-item dropdown no-arrow">
+              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                  Rol: {{ request.session.rol|default:"Docente" }}
+                </span>
+                <img class="img-profile rounded-circle"
+                     src="{% static 'img/undraw_profile.svg' %}">
+              </a>
+              <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                   aria-labelledby="userDropdown">
+                <a class="dropdown-item" href="{% url 'documentos:logout' %}">
+                  <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                  Logout
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+        <!-- End Topbar -->
+
+        <div id="pageContent">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+      <!-- End of Main Content -->
+    </div>
+    <!-- End of Content Wrapper -->
+  </div>
+  
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+  <script>
+    function toggleContentDarkMode() {
+      document.getElementById('pageContent').classList.toggle('dark-content');
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Gestión de Usuarios - InternHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  
+  <div class="text-center mb-3">
+    <h1 class="h3 text-dark">Gestión de Usuarios</h1>
+  </div>
+  
+  <div class="text-center mb-4">
+    <a href="{% url 'documentos:crear_usuario' %}" class="btn btn-primary">Crear Usuario</a>
+  </div>
+
+  <!-- barra de busqueda -->
+  <div class="row justify-content-center mb-3">
+    <div class="col-lg-6">
+      <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuario..." onkeyup="filtrarUsuarios()">
+    </div>
+  </div>
+
+  <div class="table-responsive" style="overflow-x:auto;">
+    <table class="table table-bordered" id="usuariosTable" style="color: #000; min-width: 600px;">
+     
+      <thead style="background: #385fcf; color: #fff;">
+        <tr>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Créditos</th>
+          <th>Semestre</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #fff;">
+        {% for user in usuarios %}
+        <tr>
+          <td>{{ user.correo }}</td>
+          <td>{{ user.rol }}</td>
+          <td>{{ user.creditos|default:"-" }}</td>
+          <td>{{ user.semestre|default:"-" }}</td>
+          <td>
+            <a href="{% url 'documentos:editar_usuario' user.id %}" class="btn btn-sm btn-warning">Editar</a>
+            <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('{{ user.id }}')">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  
+  function confirmarEliminacion(userId) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = `/usuarios/eliminar/${userId}/`;
+      }
+    });
+  }
+
+  
+  function filtrarUsuarios() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const table = document.getElementById('usuariosTable');
+    const trs = table.getElementsByTagName('tr');
+    for (let i = 1; i < trs.length; i++) {
+      let match = false;
+      const tds = trs[i].getElementsByTagName('td');
+      for (let j = 0; j < tds.length - 1; j++) {
+        const text = tds[j].innerText.toLowerCase();
+        if (text.indexOf(input) > -1) {
+          match = true;
+          break;
+        }
+      }
+      trs[i].style.display = match ? '' : 'none';
+    }
+  }
+</script>
+{% endblock %}

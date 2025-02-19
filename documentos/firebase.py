@@ -26,7 +26,7 @@ auth = firebase.auth()
 storage = firebase.storage()
 
 
-#es para buscar usuario por correo
+#busca usuario por correo
 def obtener_usuario_por_correo(correo):
     usuarios = db.child("Usuarios").get().val()
     if usuarios:

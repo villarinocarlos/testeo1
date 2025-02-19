@@ -1,72 +1,96 @@
-<!-- documentos/templates/login.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoCenter - Iniciar Sesión</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; height: 100vh; display: flex; }
-        .left-panel { background-color: #0A2647; color: white; width: 35%; padding: 4rem; display: flex; flex-direction: column; justify-content: center; }
-        .right-panel { width: 65%; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #f0f4f8; padding: 2rem; }
-        form { width: 100%; max-width: 400px; }
-        input, button { width: 100%; padding: 0.9rem; margin-bottom: 1rem; font-size: 0.95rem; border-radius: 5px; }
-        button { font-weight: bold; color: white; background-color: #2F9CF1; border: none; cursor: pointer; transition: background-color 0.3s; }
-        button:hover { background-color: #1D7ABF; }
-        .error-message { color: red; font-size: 0.85rem; margin-bottom: 1rem; text-align: left; }
-    </style>
-    <script>
-        function validarFormulario(event) {
-            const correo = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorContainer = document.getElementById('error-container');
-            errorContainer.innerText = '';
-
-            if (!correo || !password) {
-                errorContainer.innerText = '⚠️ Los campos no pueden estar vacíos.';
-                event.preventDefault();
-                return;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const mensajes = document.getElementById('django-messages');
-            if (mensajes && mensajes.innerText.includes('Inicio de sesión exitoso')) {
-                setTimeout(() => {
-                    window.location.replace('/dashboard/');
-                }, 500);
-            }
-        });
-    </script>
+  <meta charset="utf-8">
+  <title>Bienvenido a InternHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+  <style>
+    
+    body {
+      background: linear-gradient(135deg, #0A2647 0%, #2F9CF1 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 500px; 
+      padding: 15px;
+    }
+   
+    .login-card {
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    
+    .logo-text {
+      font-size: 1.8rem;
+      color: #0A2647;
+      font-weight: bold;
+    }
+    
+    .btn-custom {
+      background-color: #2F9CF1;
+      border-color: #2F9CF1;
+      color: #000; 
+    }
+    .btn-custom:hover {
+      background-color: #1D7ABF;
+      border-color: #1D7ABF;
+      color: #000;
+    }
+  </style>
 </head>
 <body>
-    <div class="left-panel">
-        <h1>DoCenter</h1>
-        <h2>Beneficios de la Plataforma</h2>
-        <ul>
-            <li>✔️ Gestión eficiente de docentes</li>
-            <li>✔️ Acceso seguro y rápido</li>
-            <li>✔️ Reportes detallados</li>
-            <li>✔️ Fácil de usar</li>
-        </ul>
-    </div>
-    <div class="right-panel">
-        <h2>Iniciar Sesión</h2>
-        <form method="POST" action="{% url 'documentos:login' %}" onsubmit="validarFormulario(event)">
-            {% csrf_token %}
-            <input id="email" name="correo" type="email" placeholder="Correo Electrónico" required>
-            <input id="password" name="contraseña" type="password" placeholder="Contraseña" required>
-            <div id="error-container" class="error-message"></div>
-            <button type="submit">Iniciar Sesión</button>
-        </form>
-        {% if messages %}
-            <div id="django-messages" class="error-message">
+  <div class="login-container">
+    <div class="card login-card o-hidden border-0">
+      <div class="card-body p-0">
+        <div class="row no-gutters">
+          <div class="col-lg-12">
+            <div class="p-5">
+              
+              <div class="text-center mb-4">
+                <span class="logo-text">InternHub</span>
+              </div>
+              
+              <form method="POST" action="{% url 'documentos:login' %}" class="user">
+                {% csrf_token %}
+                <div class="form-group">
+                  <input type="email" class="form-control form-control-user"
+                         name="correo" placeholder="Correo Electrónico" required>
+                </div>
+                <div class="form-group">
+                  <input type="password" class="form-control form-control-user"
+                         name="contraseña" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn btn-custom btn-user btn-block">
+                  Iniciar Sesión
+                </button>
+              </form>
+              {% if messages %}
                 {% for message in messages %}
-                    {{ message }}
+                  {% if "error" in message.tags %}
+                  <div class="alert alert-danger mt-3">{{ message }}</div>
+                  {% endif %}
                 {% endfor %}
+              {% endif %}
             </div>
-        {% endif %}
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  
+  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
 </body>
 </html>
