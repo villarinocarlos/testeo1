@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Editar Usuario - InterHub{% endblock %}
+{% block title %}Editar Usuario - EduPrácticas{% endblock %}
 {% block content %}
 <div class="container-fluid">
   <div class="row justify-content-center">
@@ -13,9 +13,7 @@
             {% if msg|lower == "el usuario ya está en uso." %}
               <small class="text-danger">El usuario ya está en uso.</small>
             {% elif msg|lower == "no cumples con los requisitos para presentar estadía." %}
-              <small class="text-danger">
-                No cumples con los requisitos para presentar estadía.
-              </small>
+              <small class="text-danger">No cumples con los requisitos para presentar estadía.</small>
             {% endif %}
           {% endfor %}
         {% endif %}
@@ -31,7 +29,7 @@
           <small id="correoError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
         </div>
 
-        <!-- Contraseña (Opcional) -->
+        <!-- Nueva Contraseña (Opcional) -->
         <div class="form-group position-relative">
           <label for="contraseña">Nueva Contraseña <small class="text-muted">(Dejar en blanco para mantener la actual)</small></label>
           <input type="password" class="form-control" id="contraseña" name="contraseña" placeholder="Nueva Contraseña">
@@ -52,20 +50,28 @@
         <!-- Campos Alumno -->
         <div id="camposAlumno" style="display: none;">
           <div class="form-group position-relative">
+            <label for="matricula">Matrícula</label>
+            <input type="text" class="form-control" id="matricula" name="matricula" placeholder="Ej: 2023001234" value="{{ usuario.matricula|default:'' }}">
+            <small id="matriculaError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+          <div class="form-group position-relative">
+            <label for="telefono">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ej: 55-1234-5678" value="{{ usuario.telefono|default:'' }}">
+            <small id="telefonoError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+          <div class="form-group position-relative">
             <label for="creditos">Créditos (0 - 300)</label>
-            <input type="number" class="form-control" id="creditos" name="creditos"
-                   placeholder="Ej: 180" value="{{ usuario.creditos|default:'' }}">
+            <input type="number" class="form-control" id="creditos" name="creditos" placeholder="Ej: 180" value="{{ usuario.creditos|default:'' }}">
             <small id="creditosError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
           </div>
           <div class="form-group position-relative">
             <label for="semestre">Semestre (1 - 10)</label>
-            <input type="number" class="form-control" id="semestre" name="semestre"
-                   placeholder="Ej: 7" value="{{ usuario.semestre|default:'' }}">
+            <input type="number" class="form-control" id="semestre" name="semestre" placeholder="Ej: 7" value="{{ usuario.semestre|default:'' }}">
             <small id="semestreError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block mt-4">Guardar Cambios</button>
+        <button type="submit" class="btn btn-new btn-block mt-4">Guardar Cambios</button>
       </form>
     </div>
   </div>
@@ -79,6 +85,8 @@
       camposAlumno.style.display = 'block';
     } else {
       camposAlumno.style.display = 'none';
+      document.getElementById('matricula').value = '';
+      document.getElementById('telefono').value = '';
       document.getElementById('creditos').value = '';
       document.getElementById('semestre').value = '';
     }
@@ -97,12 +105,16 @@
     let valido = true;
     document.getElementById('correoError').style.display = 'none';
     document.getElementById('contraseñaError').style.display = 'none';
+    document.getElementById('matriculaError').style.display = 'none';
+    document.getElementById('telefonoError').style.display = 'none';
     document.getElementById('creditosError').style.display = 'none';
     document.getElementById('semestreError').style.display = 'none';
 
     const correo = document.getElementById('correo').value.trim();
     const nuevaContraseña = document.getElementById('contraseña').value.trim();
     const rol = document.getElementById('rol').value;
+    const matricula = document.getElementById('matricula').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
     const creditos = document.getElementById('creditos').value.trim();
     const semestre = document.getElementById('semestre').value.trim();
 
@@ -121,6 +133,14 @@
     }
 
     if (rol === 'Alumno') {
+      if (!matricula) {
+        mostrarError('matriculaError', 'La matrícula es obligatoria para un Alumno.');
+        valido = false;
+      }
+      if (!telefono) {
+        mostrarError('telefonoError', 'El teléfono es obligatorio para un Alumno.');
+        valido = false;
+      }
       if (!creditos || !semestre) {
         mostrarError('creditosError', 'Créditos y semestre son obligatorios para un Alumno.');
         mostrarError('semestreError', 'Créditos y semestre son obligatorios para un Alumno.');
@@ -146,4 +166,17 @@
     toggleCamposAlumno();
   });
 </script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
 {% endblock %}

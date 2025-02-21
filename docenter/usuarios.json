@@ -1,0 +1,75 @@
+{
+    "Usuarios": {
+      "u1": {
+        "correo": "admin@edupracticas.com",
+        "contraseña": "Admin123",
+        "rol": "Admin"
+      },
+      "u2": {
+        "correo": "empresario@edupracticas.com",
+        "contraseña": "Empresario123",
+        "rol": "Empresario"
+      },
+      "u3": {
+        "correo": "alumno1@edupracticas.com",
+        "contraseña": "Alumno123",
+        "rol": "Alumno",
+        "matricula": "202300001",
+        "telefono": "55-1234-5678",
+        "creditos": 200,
+        "semestre": 7
+      },
+      "u4": {
+        "correo": "alumno2@edupracticas.com",
+        "contraseña": "Alumno456",
+        "rol": "Alumno",
+        "matricula": "202300002",
+        "telefono": "55-2345-6789",
+        "creditos": 220,
+        "semestre": 8
+      }
+    },
+    "Empresas": {
+      "e1": {
+        "nombre": "Empresa Innovadora",
+        "rfc": "XAXX010101000",
+        "contacto": "contacto@empresa.com",
+        "proyectos": {
+          "p1": true,
+          "p2": true
+        }
+      },
+      "e2": {
+        "nombre": "Soluciones Tecnológicas",
+        "rfc": "TCHS010101XXX",
+        "contacto": "info@soluciones.com",
+        "proyectos": {
+          "p3": true
+        }
+      }
+    },
+    "Proyectos": {
+      "p1": {
+        "empresaId": "e1",
+        "titulo": "Desarrollo Web",
+        "descripcion": "Crear una plataforma de gestión de prácticas con Django y Firebase.",
+        "vacantes": 3,
+        "requisitos": "Conocimientos en Python y Django"
+      },
+      "p2": {
+        "empresaId": "e1",
+        "titulo": "Aplicación Móvil",
+        "descripcion": "Desarrollar una aplicación móvil para seguimiento de prácticas.",
+        "vacantes": 2,
+        "requisitos": "Conocimientos en React Native"
+      },
+      "p3": {
+        "empresaId": "e2",
+        "titulo": "Análisis de Datos",
+        "descripcion": "Realizar análisis de datos para optimizar procesos internos.",
+        "vacantes": 1,
+        "requisitos": "Conocimientos en Python y Pandas"
+      }
+    }
+  }
+  

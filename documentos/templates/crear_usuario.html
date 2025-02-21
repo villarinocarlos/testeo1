@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Crear Usuario - InterHub{% endblock %}
+{% block title %}Crear Usuario - EduPrácticas{% endblock %}
 {% block content %}
 <div class="container-fluid">
   <div class="row justify-content-center">
     <div class="col-lg-6">
       <h1 class="h3 mb-4 text-dark text-center">Crear Usuario</h1>
 
-      <!-- Mensaje global para errores (correo duplicado o requisitos) -->
+      <!-- Mensaje global para errores -->
       <div class="mt-2 text-center">
         {% if messages %}
           {% for msg in messages %}
             {% if msg|lower == "el usuario ya está en uso." %}
               <small class="text-danger">El usuario ya está en uso.</small>
             {% elif msg|lower == "no cumples con los requisitos para presentar estadía." %}
-              <small class="text-danger">
-                No cumples con los requisitos para presentar estadía.
-              </small>
+              <small class="text-danger">No cumples con los requisitos para presentar estadía.</small>
             {% endif %}
           {% endfor %}
         {% endif %}
@@ -27,16 +25,14 @@
         <!-- Correo -->
         <div class="form-group position-relative">
           <label for="correo">Correo Electrónico</label>
-          <input type="email" class="form-control" id="correo" name="correo"
-                 placeholder="ejemplo@correo.com" required>
+          <input type="email" class="form-control" id="correo" name="correo" placeholder="ejemplo@correo.com" required>
           <small id="correoError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
         </div>
 
         <!-- Contraseña -->
         <div class="form-group position-relative">
           <label for="contraseña">Contraseña</label>
-          <input type="password" class="form-control" id="contraseña" name="contraseña"
-                 placeholder="Contraseña" required>
+          <input type="password" class="form-control" id="contraseña" name="contraseña" placeholder="Contraseña" required>
           <small id="contraseñaError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
         </div>
 
@@ -54,6 +50,16 @@
         <!-- Campos Alumno -->
         <div id="camposAlumno" style="display: none;">
           <div class="form-group position-relative">
+            <label for="matricula">Matrícula</label>
+            <input type="text" class="form-control" id="matricula" name="matricula" placeholder="Ej: 2023001234">
+            <small id="matriculaError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+          <div class="form-group position-relative">
+            <label for="telefono">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ej: 5512345678">
+            <small id="telefonoError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
+          </div>
+          <div class="form-group position-relative">
             <label for="creditos">Créditos (0 - 300)</label>
             <input type="number" class="form-control" id="creditos" name="creditos" placeholder="Ej: 180">
             <small id="creditosError" class="text-danger" style="display:none; position:absolute; bottom:-1.2rem;"></small>
@@ -65,7 +71,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block mt-4">Crear Usuario</button>
+        <button type="submit" class="btn btn-new btn-block mt-4">Crear Usuario</button>
       </form>
     </div>
   </div>
@@ -79,12 +85,13 @@
       camposAlumno.style.display = 'block';
     } else {
       camposAlumno.style.display = 'none';
+      document.getElementById('matricula').value = '';
+      document.getElementById('telefono').value = '';
       document.getElementById('creditos').value = '';
       document.getElementById('semestre').value = '';
     }
   }
 
-  // Función para mostrar error debajo del campo
   function mostrarError(campoErrorId, mensaje) {
     const errorElem = document.getElementById(campoErrorId);
     errorElem.innerText = mensaje;
@@ -99,31 +106,55 @@
     // Ocultar errores previos
     document.getElementById('correoError').style.display = 'none';
     document.getElementById('contraseñaError').style.display = 'none';
+    document.getElementById('matriculaError').style.display = 'none';
+    document.getElementById('telefonoError').style.display = 'none';
     document.getElementById('creditosError').style.display = 'none';
     document.getElementById('semestreError').style.display = 'none';
 
     const correo = document.getElementById('correo').value.trim();
     const contraseña = document.getElementById('contraseña').value.trim();
     const rol = document.getElementById('rol').value;
+    const matricula = document.getElementById('matricula').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
     const creditos = document.getElementById('creditos').value.trim();
     const semestre = document.getElementById('semestre').value.trim();
 
     // Validar correo
     const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexCorreo.test(correo)) {
-      mostrarError('correoError', 'Por favor, ingresa un correo electrónico válido (ej: usuario@dominio.com).');
+      mostrarError('correoError', 'Por favor, ingresa un correo válido (ej: usuario@dominio.com).');
       valido = false;
     }
 
-    // Validar contraseña sin espacios (6-20 caracteres, al menos 1 mayúscula y 1 dígito, sin espacios)
+    // Validar contraseña (sin espacios, 6-20 caracteres, al menos 1 mayúscula y 1 dígito)
     const regexPass = /^(?!.*\s)(?=.*[A-Z])(?=.*\d)[A-Za-z\d_-]{6,20}$/;
     if (!regexPass.test(contraseña)) {
       mostrarError('contraseñaError', 'La contraseña debe tener 6-20 caracteres, al menos 1 mayúscula y 1 dígito, y no debe contener espacios ni caracteres especiales (solo - o _).');
       valido = false;
     }
 
-    // Si rol es Alumno, validar que cumpla con los requisitos
+    // Si rol es Alumno, validar campos adicionales
     if (rol === 'Alumno') {
+      if (!matricula) {
+        mostrarError('matriculaError', 'La matrícula es obligatoria para un Alumno.');
+        valido = false;
+      } else {
+        const regexNumeros = /^[0-9]{1,10}$/;
+        if (!regexNumeros.test(matricula)) {
+          mostrarError('matriculaError', 'La matrícula debe contener solo números y tener máximo 10 dígitos.');
+          valido = false;
+        }
+      }
+      if (!telefono) {
+        mostrarError('telefonoError', 'El teléfono es obligatorio para un Alumno.');
+        valido = false;
+      } else {
+        const regexNumeros = /^[0-9]{1,10}$/;
+        if (!regexNumeros.test(telefono)) {
+          mostrarError('telefonoError', 'El teléfono debe contener solo números y tener máximo 10 dígitos.');
+          valido = false;
+        }
+      }
       if (!creditos || !semestre) {
         mostrarError('creditosError', 'Créditos y semestre son obligatorios para un Alumno.');
         mostrarError('semestreError', 'Créditos y semestre son obligatorios para un Alumno.');
@@ -145,4 +176,17 @@
     return valido;
   }
 </script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
 {% endblock %}

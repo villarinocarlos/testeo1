@@ -18,7 +18,7 @@ def login_view(request):
     if request.method == "POST":
         correo = request.POST.get('correo')
         contraseña = request.POST.get('contraseña')
-        # Llamamos a la función que busca el usuario en Firebase
+        
         uid, user_data = obtener_usuario_por_correo(correo)
 
         if user_data and user_data.get("contraseña") == contraseña:
@@ -74,6 +74,9 @@ def crear_usuario(request):
         rol = request.POST.get('rol', '')
         creditos = request.POST.get('creditos', '').strip()
         semestre = request.POST.get('semestre', '').strip()
+        
+        matricula = request.POST.get('matricula', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
 
         # Verificar si el correo ya existe
         usuarios = db.child("Usuarios").get().val() or {}
@@ -82,11 +85,11 @@ def crear_usuario(request):
                 messages.error(request, "El usuario ya está en uso.")
                 return redirect('documentos:crear_usuario')
 
-        # Si el rol es Alumno, verificar que cumpla con los requisitos mínimos
+        # Si el rol es Alumno, verificar que cumpla con los requisitos minimos y que matricula y teléfono estén informados
         if rol == "Alumno":
             c = int(creditos) if creditos else 0
             s = int(semestre) if semestre else 0
-            if c < 180 or s < 7:
+            if c < 180 or s < 7 or not matricula or not telefono:
                 messages.error(request, "No cumples con los requisitos para presentar estadía.")
                 return redirect('documentos:crear_usuario')
 
@@ -98,6 +101,8 @@ def crear_usuario(request):
         if rol == "Alumno":
             datos["creditos"] = int(creditos) if creditos else 0
             datos["semestre"] = int(semestre) if semestre else 0
+            datos["matricula"] = matricula
+            datos["telefono"] = telefono
 
         db.child("Usuarios").push(datos)
         messages.success(request, "Usuario creado exitosamente.")
@@ -118,19 +123,20 @@ def editar_usuario(request, user_id):
         nueva_contraseña = request.POST.get('contraseña', '').strip()
         creditos = request.POST.get('creditos', '').strip()
         semestre = request.POST.get('semestre', '').strip()
+        matricula = request.POST.get('matricula', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
 
-        # Verificar si el correo ya existe en otro usuario
+        # Verificar si se cambio el correo a uno ya existente en otro usuario
         usuarios = db.child("Usuarios").get().val() or {}
         for key, data in usuarios.items():
             if key != user_id and data.get("correo") == correo:
                 messages.error(request, "El usuario ya está en uso.")
                 return redirect('documentos:editar_usuario', user_id=user_id)
 
-        # Si rol Alumno, verificar requisitos
         if rol == "Alumno":
             c = int(creditos) if creditos else 0
             s = int(semestre) if semestre else 0
-            if c < 180 or s < 7:
+            if c < 180 or s < 7 or not matricula or not telefono:
                 messages.error(request, "No cumples con los requisitos para presentar estadía.")
                 return redirect('documentos:editar_usuario', user_id=user_id)
 
@@ -138,15 +144,18 @@ def editar_usuario(request, user_id):
             "correo": correo,
             "rol": rol
         }
-        # Actualizar contraseña solo si se ingresó una nueva
         if nueva_contraseña:
             updates["contraseña"] = nueva_contraseña
         if rol == "Alumno":
             updates["creditos"] = int(creditos) if creditos else 0
             updates["semestre"] = int(semestre) if semestre else 0
+            updates["matricula"] = matricula
+            updates["telefono"] = telefono
         else:
             updates["creditos"] = None
             updates["semestre"] = None
+            updates["matricula"] = None
+            updates["telefono"] = None
 
         db.child("Usuarios").child(user_id).update(updates)
         messages.success(request, "Usuario actualizado exitosamente.")
@@ -156,6 +165,9 @@ def editar_usuario(request, user_id):
         "usuario": usuario_data,
         "user_id": user_id
     })
+
+
+
 
 @admin_required
 def eliminar_usuario(request, user_id):

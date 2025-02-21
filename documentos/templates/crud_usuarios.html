@@ -1,19 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Gestión de Usuarios - InternHub{% endblock %}
-
+{% block title %}Gestión de Usuarios - EduPrácticas{% endblock %}
 {% block content %}
 <div class="container-fluid">
-  
+  <!-- Título y botón centrados -->
   <div class="text-center mb-3">
     <h1 class="h3 text-dark">Gestión de Usuarios</h1>
   </div>
-  
   <div class="text-center mb-4">
-    <a href="{% url 'documentos:crear_usuario' %}" class="btn btn-primary">Crear Usuario</a>
+    <a href="{% url 'documentos:crear_usuario' %}" class="btn btn-new">Crear Usuario</a>
   </div>
 
-  <!-- barra de busqueda -->
+  <!-- Barra de búsqueda -->
   <div class="row justify-content-center mb-3">
     <div class="col-lg-6">
       <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuario..." onkeyup="filtrarUsuarios()">
@@ -21,12 +19,13 @@
   </div>
 
   <div class="table-responsive" style="overflow-x:auto;">
-    <table class="table table-bordered" id="usuariosTable" style="color: #000; min-width: 600px;">
-     
-      <thead style="background: #385fcf; color: #fff;">
+    <table class="table table-bordered" id="usuariosTable" style="color: #000; min-width: 800px;">
+      <thead style="background: #0A2F58; color: #fff;">
         <tr>
           <th>Correo</th>
           <th>Rol</th>
+          <th>Matrícula</th>
+          <th>Teléfono</th>
           <th>Créditos</th>
           <th>Semestre</th>
           <th>Acciones</th>
@@ -37,13 +36,13 @@
         <tr>
           <td>{{ user.correo }}</td>
           <td>{{ user.rol }}</td>
+          <td>{{ user.matricula|default:"-" }}</td>
+          <td>{{ user.telefono|default:"-" }}</td>
           <td>{{ user.creditos|default:"-" }}</td>
           <td>{{ user.semestre|default:"-" }}</td>
           <td>
-            <a href="{% url 'documentos:editar_usuario' user.id %}" class="btn btn-sm btn-warning">Editar</a>
-            <button class="btn btn-sm btn-danger" onclick="confirmarEliminacion('{{ user.id }}')">
-              Eliminar
-            </button>
+            <a href="{% url 'documentos:editar_usuario' user.id %}" class="btn btn-warning btn-sm">Editar</a>
+            <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ user.id }}')">Eliminar</button>
           </td>
         </tr>
         {% endfor %}
@@ -55,7 +54,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  
   function confirmarEliminacion(userId) {
     Swal.fire({
       title: '¿Estás seguro?',
@@ -73,7 +71,7 @@
     });
   }
 
-  
+  // Función para filtrar usuarios en la tabla
   function filtrarUsuarios() {
     const input = document.getElementById('searchInput').value.toLowerCase();
     const table = document.getElementById('usuariosTable');
@@ -82,8 +80,7 @@
       let match = false;
       const tds = trs[i].getElementsByTagName('td');
       for (let j = 0; j < tds.length - 1; j++) {
-        const text = tds[j].innerText.toLowerCase();
-        if (text.indexOf(input) > -1) {
+        if (tds[j].innerText.toLowerCase().indexOf(input) > -1) {
           match = true;
           break;
         }
@@ -92,4 +89,17 @@
     }
   }
 </script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
 {% endblock %}

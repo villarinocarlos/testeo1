@@ -1,14 +1,17 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Bienvenido a InternHub</title>
+  <meta charset="UTF-8">
+  <title>EduPrácticas - Inicio de Sesión</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+
+  <!-- Estilos de Bootstrap y fuente -->
+  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+
   <style>
-    
+    /* Fondo con degradado */
     body {
       background: linear-gradient(135deg, #0A2647 0%, #2F9CF1 100%);
       min-height: 100vh;
@@ -17,80 +20,140 @@
       justify-content: center;
       margin: 0;
     }
-    
+
+    /* Contenedor principal */
     .login-container {
       width: 100%;
-      max-width: 500px; 
-      padding: 15px;
+      max-width: 600px;
+      padding: 20px;
     }
-   
+
+    /* Tarjeta de inicio de sesión */
     .login-card {
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      padding: 30px;
     }
-    
-    .logo-text {
-      font-size: 1.8rem;
-      color: #0A2647;
+
+    /* Título del sistema */
+    .login-header {
+      text-align: center;
+      font-size: 1.5rem;
       font-weight: bold;
+      color: #0A2647;
+      margin-bottom: 15px;
     }
-    
+
+    /* Imagen o logo */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .logo-container img {
+      width: 250px;
+      height: auto;
+    }
+
+    /* Botón personalizado */
     .btn-custom {
       background-color: #2F9CF1;
       border-color: #2F9CF1;
-      color: #000; 
+      color: white;
+      font-weight: bold;
     }
+
     .btn-custom:hover {
       background-color: #1D7ABF;
       border-color: #1D7ABF;
-      color: #000;
+    }
+
+    /* Mensajes de error en rojo */
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="login-container">
     <div class="card login-card o-hidden border-0">
-      <div class="card-body p-0">
-        <div class="row no-gutters">
-          <div class="col-lg-12">
-            <div class="p-5">
-              
-              <div class="text-center mb-4">
-                <span class="logo-text">InternHub</span>
-              </div>
-              
-              <form method="POST" action="{% url 'documentos:login' %}" class="user">
-                {% csrf_token %}
-                <div class="form-group">
-                  <input type="email" class="form-control form-control-user"
-                         name="correo" placeholder="Correo Electrónico" required>
-                </div>
-                <div class="form-group">
-                  <input type="password" class="form-control form-control-user"
-                         name="contraseña" placeholder="Contraseña" required>
-                </div>
-                <button type="submit" class="btn btn-custom btn-user btn-block">
-                  Iniciar Sesión
-                </button>
-              </form>
-              {% if messages %}
-                {% for message in messages %}
-                  {% if "error" in message.tags %}
-                  <div class="alert alert-danger mt-3">{{ message }}</div>
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            </div>
-          </div>
+      <div class="card-body">
+        <div class="logo-container">
+          <img src="{% static 'img/logo.png' %}" alt="EduPrácticas Logo">
         </div>
+        <div class="login-header">EduPrácticas</div>
+
+        <form method="POST" action="{% url 'documentos:login' %}" class="user" onsubmit="return validarLogin()">
+          {% csrf_token %}
+          
+          <!-- Correo Electrónico -->
+          <div class="form-group">
+            <label for="correo">Correo Electrónico</label>
+            <input type="email" class="form-control form-control-user"
+                   id="correo" name="correo" placeholder="ejemplo@correo.com" required>
+            <small id="correoError" class="error-message"></small>
+          </div>
+
+          <!-- Contraseña -->
+          <div class="form-group">
+            <label for="contraseña">Contraseña</label>
+            <input type="password" class="form-control form-control-user"
+                   id="contraseña" name="contraseña" placeholder="Contraseña" required>
+            <small id="contraseñaError" class="error-message"></small>
+          </div>
+
+          <button type="submit" class="btn btn-custom btn-user btn-block">
+            Iniciar Sesión
+          </button>
+
+          <!-- Mensajes de error -->
+          {% if messages %}
+            {% for message in messages %}
+              {% if "error" in message.tags %}
+                <div class="alert alert-danger mt-3">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+        </form>
       </div>
     </div>
   </div>
 
-  
-  <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-  <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+  <!-- Scripts de validación -->
+  <script>
+    function mostrarError(id, mensaje) {
+      document.getElementById(id).innerText = mensaje;
+      document.getElementById(id).style.display = 'block';
+      setTimeout(() => {
+        document.getElementById(id).style.display = 'none';
+      }, 3000);
+    }
+
+    function validarLogin() {
+      let valido = true;
+      let correo = document.getElementById("correo").value.trim();
+      let contraseña = document.getElementById("contraseña").value.trim();
+      
+      // Validar correo
+      const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!regexCorreo.test(correo)) {
+        mostrarError("correoError", "Ingresa un correo válido (ejemplo@correo.com).");
+        valido = false;
+      }
+
+      // Validar contraseña
+      const regexPass = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d_-]{6,20}$/;
+      if (!regexPass.test(contraseña)) {
+        mostrarError("contraseñaError", "Debe tener 6-20 caracteres, 1 mayúscula y 1 número.");
+        valido = false;
+      }
+
+      return valido;
+    }
+  </script>
 </body>
 </html>
