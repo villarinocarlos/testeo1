@@ -6,12 +6,12 @@
   <title>EduPrácticas - Inicio de Sesión</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Estilos de Bootstrap y fuente -->
+  
   <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
   <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
 
   <style>
-    /* Fondo con degradado */
+    
     body {
       background: linear-gradient(135deg, #0A2647 0%, #2F9CF1 100%);
       min-height: 100vh;
@@ -21,21 +21,21 @@
       margin: 0;
     }
 
-    /* Contenedor principal */
+    
     .login-container {
       width: 100%;
       max-width: 600px;
       padding: 20px;
     }
 
-    /* Tarjeta de inicio de sesión */
+    
     .login-card {
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
       padding: 30px;
     }
 
-    /* Título del sistema */
+    
     .login-header {
       text-align: center;
       font-size: 1.5rem;
@@ -44,7 +44,7 @@
       margin-bottom: 15px;
     }
 
-    /* Imagen o logo */
+    
     .logo-container {
       text-align: center;
       margin-bottom: 15px;
@@ -55,7 +55,7 @@
       height: auto;
     }
 
-    /* Botón personalizado */
+    
     .btn-custom {
       background-color: #2F9CF1;
       border-color: #2F9CF1;
@@ -68,7 +68,7 @@
       border-color: #1D7ABF;
     }
 
-    /* Mensajes de error en rojo */
+    
     .error-message {
       color: red;
       font-size: 0.9rem;
@@ -89,7 +89,7 @@
         <form method="POST" action="{% url 'documentos:login' %}" class="user" onsubmit="return validarLogin()">
           {% csrf_token %}
           
-          <!-- Correo Electrónico -->
+          
           <div class="form-group">
             <label for="correo">Correo Electrónico</label>
             <input type="email" class="form-control form-control-user"
@@ -97,7 +97,7 @@
             <small id="correoError" class="error-message"></small>
           </div>
 
-          <!-- Contraseña -->
+          
           <div class="form-group">
             <label for="contraseña">Contraseña</label>
             <input type="password" class="form-control form-control-user"
@@ -109,7 +109,7 @@
             Iniciar Sesión
           </button>
 
-          <!-- Mensajes de error -->
+          
           {% if messages %}
             {% for message in messages %}
               {% if "error" in message.tags %}
@@ -123,7 +123,7 @@
     </div>
   </div>
 
-  <!-- Scripts de validación -->
+  
   <script>
     function mostrarError(id, mensaje) {
       document.getElementById(id).innerText = mensaje;
@@ -138,14 +138,14 @@
       let correo = document.getElementById("correo").value.trim();
       let contraseña = document.getElementById("contraseña").value.trim();
       
-      // Validar correo
+      // Valida correo
       const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!regexCorreo.test(correo)) {
         mostrarError("correoError", "Ingresa un correo válido (ejemplo@correo.com).");
         valido = false;
       }
 
-      // Validar contraseña
+      // Valida contraseña
       const regexPass = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d_-]{6,20}$/;
       if (!regexPass.test(contraseña)) {
         mostrarError("contraseñaError", "Debe tener 6-20 caracteres, 1 mayúscula y 1 número.");
