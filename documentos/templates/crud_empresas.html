@@ -1,6 +1,100 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Gestión de Usuarios - DoCenter{% endblock %}
+{% block title %}Gestión de Empresas - EduPrácticas{% endblock %}
 {% block content %}
-<!-- ... -->
+<div class="container-fluid">
+  
+  <div class="text-center mb-3">
+    <h1 class="h3 text-dark">Gestión de Empresas</h1>
+  </div>
+  <div class="text-center mb-4">
+    <a href="{% url 'documentos:crear_empresa' %}" class="btn btn-new">Crear Empresa</a>
+  </div>
+
+  
+  <div class="row justify-content-center mb-3">
+    <div class="col-lg-6">
+      <input type="text" id="searchInput" class="form-control" placeholder="Buscar empresa..." onkeyup="filtrarEmpresas()">
+    </div>
+  </div>
+
+  <div class="table-responsive" style="overflow-x:auto;">
+    <table class="table table-bordered" id="empresasTable" style="color: #000; min-width: 800px;">
+      <thead style="background: #0A2F58; color: #fff;">
+        <tr>
+          <th>Nombre</th>
+          <th>RFC</th>
+          <th>Correo de Contacto</th>
+          <th>Teléfono</th>  
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #fff;">
+        {% for empresa in empresas %}
+        <tr>
+          <td>{{ empresa.nombre }}</td>
+          <td>{{ empresa.rfc }}</td>
+          <td>{{ empresa.correo }}</td>
+          <td>{{ empresa.telefono }}</td>  
+          <td>
+            <a href="{% url 'documentos:editar_empresa' empresa.id %}" class="btn btn-warning btn-sm">Editar</a>
+            <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ empresa.id }}')">Eliminar</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function confirmarEliminacion(empresaId) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = `/empresas/eliminar/${empresaId}/`;
+      }
+    });
+  }
+
+  // Función para filtrar empresas en la tabla
+  function filtrarEmpresas() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const table = document.getElementById('empresasTable');
+    const trs = table.getElementsByTagName('tr');
+    for (let i = 1; i < trs.length; i++) {
+      let match = false;
+      const tds = trs[i].getElementsByTagName('td');
+      for (let j = 0; j < tds.length - 1; j++) {
+        if (tds[j].innerText.toLowerCase().indexOf(input) > -1) {
+          match = true;
+          break;
+        }
+      }
+      trs[i].style.display = match ? '' : 'none';
+    }
+  }
+</script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
 {% endblock %}

@@ -49,9 +49,19 @@ def logout_view(request):
     return redirect('documentos:login')
 
 
-# placeholders de momento
 def crud_empresas(request):
-    return render(request, 'crud_empresas.html')
+    empresas = db.child("Empresas").get().val()
+    lista_empresas = []
+
+    if empresas:
+        for key, empresa in empresas.items():
+            empresa['id'] = key
+            # Asegurar que siempre haya un número de teléfono mostrado
+            empresa['telefono'] = empresa.get('telefono') or empresa.get('contacto', 'No disponible')
+            lista_empresas.append(empresa)
+
+    return render(request, 'crud_empresas.html', {'empresas': lista_empresas})
+
 
 
 def crud_proyectos(request):
@@ -174,3 +184,88 @@ def eliminar_usuario(request, user_id):
     db.child("Usuarios").child(user_id).remove()
     messages.success(request, "Usuario eliminado.")
     return redirect('documentos:crud_usuarios')
+
+
+def crear_empresa(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre").strip()
+        rfc = request.POST.get("rfc").strip().upper()
+        correo = request.POST.get("correo").strip()
+        telefono = request.POST.get("telefono").strip()
+
+        # Validaciones
+        if not nombre or not rfc or not correo or not telefono:
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect("documentos:crear_empresa")
+
+        if len(rfc) != 13:
+            messages.error(request, "El RFC debe tener exactamente 13 caracteres.")
+            return redirect("documentos:crear_empresa")
+
+        if db.child("Empresas").order_by_child("rfc").equal_to(rfc).get().val():
+            messages.error(request, "El RFC ya está registrado.")
+            return redirect("documentos:crear_empresa")
+
+        if db.child("Empresas").order_by_child("correo").equal_to(correo).get().val():
+            messages.error(request, "El correo ya está registrado.")
+            return redirect("documentos:crear_empresa")
+
+        if not telefono.isdigit() or len(telefono) != 10:
+            messages.error(request, "El teléfono debe contener 10 dígitos numéricos.")
+            return redirect("documentos:crear_empresa")
+
+        
+        nueva_empresa = {
+            "nombre": nombre,
+            "rfc": rfc,
+            "correo": correo,
+            "telefono": telefono
+        }
+
+        db.child("Empresas").push(nueva_empresa)
+        messages.success(request, "Empresa creada exitosamente.")
+        return redirect("documentos:crud_empresas")  
+
+    return render(request, "crear_empresa.html")
+
+
+def editar_empresa(request, empresa_id):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre").strip()
+        rfc = request.POST.get("rfc").strip()
+        correo = request.POST.get("correo").strip()
+        telefono = request.POST.get("telefono").strip()
+
+        if not (nombre and rfc and correo and telefono):
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect("documentos:editar_empresa", empresa_id=empresa_id)
+
+        empresa_ref = db.child("Empresas").child(empresa_id)
+
+        try:
+            
+            empresa_ref.update({
+                "nombre": nombre,
+                "rfc": rfc,
+                "correo": correo,
+                "telefono": telefono
+            })
+            messages.success(request, "Empresa actualizada correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al actualizar empresa: {str(e)}")
+
+        return redirect("documentos:crud_empresas")
+
+    else:
+        empresa_data = db.child("Empresas").child(empresa_id).get().val()
+        if not empresa_data:
+            messages.error(request, "Empresa no encontrada.")
+            return redirect("documentos:crud_empresas")
+
+        return render(request, "editar_empresa.html", {"empresa": empresa_data, "empresa_id": empresa_id})
+    
+
+def eliminar_empresa(request, empresa_id):
+    db.child("Empresas").child(empresa_id).remove()
+    messages.success(request, "Empresa eliminada correctamente.")
+    return redirect('documentos:crud_empresas')

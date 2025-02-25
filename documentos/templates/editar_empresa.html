@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Editar Empresa - EduPrácticas{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-4 text-dark text-center">Editar Empresa</h1>
+
+      
+      <div class="mt-2 text-center">
+        {% if messages %}
+          {% for msg in messages %}
+            {% if "error" in msg|lower %}
+              <small class="text-danger">{{ msg }}</small>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <form method="POST" class="user">
+        {% csrf_token %}
+
+        <!-- Campo oculto para enviar el ID de la empresa -->
+        <input type="hidden" name="empresa_id" value="{{ empresa.id }}">
+
+        <!-- Nombre de la empresa -->
+        <div class="form-group position-relative">
+          <label for="nombre">Nombre de la Empresa</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" value="{{ empresa.nombre }}" required>
+        </div>
+
+        <!-- RFC -->
+        <div class="form-group position-relative">
+          <label for="rfc">RFC</label>
+          <input type="text" class="form-control" id="rfc" name="rfc" value="{{ empresa.rfc }}" minlength="13" maxlength="13" required>
+        </div>
+
+        <!-- Correo de contacto -->
+        <div class="form-group position-relative">
+          <label for="correo">Correo de Contacto</label>
+          <input type="email" class="form-control" id="correo" name="correo" value="{{ empresa.correo }}" required>
+        </div>
+
+        <!-- Teléfono de contacto -->
+        <div class="form-group position-relative">
+          <label for="telefono">Teléfono de Contacto</label>
+          <input type="text" class="form-control" id="telefono" name="telefono" value="{{ empresa.telefono }}" pattern="[0-9]{10}" title="Debe contener 10 dígitos numéricos." required>
+        </div>
+
+        <!-- Botón visible y funcional -->
+        <button type="submit" class="btn btn-new btn-block mt-4">Guardar Cambios</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+
+{% endblock %}

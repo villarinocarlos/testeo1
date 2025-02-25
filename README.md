@@ -25,4 +25,4 @@ Instala las librerías necesarias con:
 python manage.py migrate
 python manage.py runserver
 
-localhost:8000 o  http://127.0.0.1:8000/
+localhost:8000 o    http://127.0.0.1:8000/

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Crear Empresa{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-4 text-dark text-center">Crear Empresa</h1>
+
+      <!-- Mensajes de error en rojo -->
+      <div class="mt-2 text-center">
+        {% if messages %}
+          {% for message in messages %}
+            <small class="text-danger">{{ message }}</small><br>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <form method="POST" class="user" onsubmit="return validarFormulario()">
+        {% csrf_token %}
+
+        <!-- Nombre de la Empresa -->
+        <div class="form-group position-relative">
+          <label for="nombre">Nombre de la Empresa</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: Soluciones Tecnológicas">
+          <small id="nombreError" class="text-danger" style="display:none;"></small>
+        </div>
+
+        <!-- RFC -->
+        <div class="form-group position-relative">
+          <label for="rfc">RFC</label>
+          <input type="text" class="form-control" id="rfc" name="rfc" placeholder="Ej: ABCD123456XYZ">
+          <small id="rfcError" class="text-danger" style="display:none;"></small>
+        </div>
+
+        <!-- Correo de Contacto -->
+        <div class="form-group position-relative">
+          <label for="correo">Correo de Contacto</label>
+          <input type="email" class="form-control" id="correo" name="correo" placeholder="Ej: contacto@empresa.com">
+          <small id="correoError" class="text-danger" style="display:none;"></small>
+        </div>
+
+        <!-- Teléfono de Contacto -->
+        <div class="form-group position-relative">
+          <label for="telefono">Teléfono de Contacto</label>
+          <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ej: 5512345678">
+          <small id="telefonoError" class="text-danger" style="display:none;"></small>
+        </div>
+
+        <button type="submit" class="btn btn-new btn-block mt-4">Crear Empresa</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function mostrarError(campoErrorId, mensaje) {
+    const errorElem = document.getElementById(campoErrorId);
+    errorElem.innerText = mensaje;
+    errorElem.style.display = 'block';
+  }
+
+  function ocultarErrores() {
+    document.getElementById('nombreError').style.display = 'none';
+    document.getElementById('rfcError').style.display = 'none';
+    document.getElementById('correoError').style.display = 'none';
+    document.getElementById('telefonoError').style.display = 'none';
+  }
+
+  function validarFormulario() {
+    let valido = true;
+    ocultarErrores();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const rfc = document.getElementById('rfc').value.trim();
+    const correo = document.getElementById('correo').value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+
+    // Validar Nombre
+    if (!nombre) {
+      mostrarError('nombreError', 'El nombre de la empresa es obligatorio.');
+      valido = false;
+    }
+
+    // Validar RFC (13 caracteres)
+    if (!rfc) {
+      mostrarError('rfcError', 'El RFC es obligatorio.');
+      valido = false;
+    } else if (rfc.length !== 13) {
+      mostrarError('rfcError', 'El RFC debe tener exactamente 13 caracteres.');
+      valido = false;
+    }
+
+    // Validar Correo
+    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!correo) {
+      mostrarError('correoError', 'El correo es obligatorio.');
+      valido = false;
+    } else if (!regexCorreo.test(correo)) {
+      mostrarError('correoError', 'Ingresa un correo válido.');
+      valido = false;
+    }
+
+    // Validar Teléfono (solo números, máx. 10 dígitos)
+    const regexTelefono = /^[0-9]{10}$/;
+    if (!telefono) {
+      mostrarError('telefonoError', 'El teléfono es obligatorio.');
+      valido = false;
+    } else if (!regexTelefono.test(telefono)) {
+      mostrarError('telefonoError', 'El teléfono debe tener exactamente 10 dígitos numéricos.');
+      valido = false;
+    }
+
+    return valido;
+  }
+</script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+{% endblock %}
