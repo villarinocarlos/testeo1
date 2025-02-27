@@ -8,11 +8,13 @@
     <div class="col-lg-6">
       <h1 class="h3 mb-4 text-dark text-center">Crear Empresa</h1>
 
-      <!-- Mensajes de error en rojo -->
+      
       <div class="mt-2 text-center">
         {% if messages %}
           {% for message in messages %}
-            <small class="text-danger">{{ message }}</small><br>
+            {% if message.level_tag == "error" %}
+              <small class="text-danger">{{ message }}</small><br>
+            {% endif %}
           {% endfor %}
         {% endif %}
       </div>

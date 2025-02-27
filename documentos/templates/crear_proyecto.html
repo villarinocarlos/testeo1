@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}Crear Proyecto - EduPrácticas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <h1 class="h3 mb-4 text-dark text-center">Crear Proyecto</h1>
+
+      
+
+      <form method="POST" class="user">
+        {% csrf_token %}
+
+        <!-- Título -->
+        <div class="form-group position-relative">
+          <label for="titulo">Título</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="titulo" 
+            name="titulo" 
+            placeholder="Ej: Plataforma E-learning"
+            required
+            oninvalid="this.setCustomValidity('Por favor, completa el título')"
+            oninput="this.setCustomValidity('')"
+          >
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group position-relative">
+          <label for="descripcion">Descripción</label>
+          <textarea 
+            class="form-control" 
+            id="descripcion" 
+            name="descripcion" 
+            rows="3" 
+            placeholder="Breve descripción del proyecto..."
+            required
+            oninvalid="this.setCustomValidity('Por favor, completa la descripción')"
+            oninput="this.setCustomValidity('')"
+          ></textarea>
+        </div>
+
+        <!-- Requisitos -->
+        <div class="form-group position-relative">
+          <label for="requisitos">Requisitos</label>
+          <textarea 
+            class="form-control" 
+            id="requisitos" 
+            name="requisitos" 
+            rows="2" 
+            placeholder="Ej: Conocimientos en Django, Python, etc."
+            required
+            oninvalid="this.setCustomValidity('Por favor, ingresa uno o dos requisitos mínimos')"
+            oninput="this.setCustomValidity('')"
+          ></textarea>
+        </div>
+
+        <!-- Vacantes -->
+        <div class="form-group position-relative">
+          <label for="vacantes">Vacantes</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            id="vacantes" 
+            name="vacantes" 
+            min="1" 
+            placeholder="Ej: 3"
+            required
+            oninvalid="this.setCustomValidity('Por favor, ingresa un número de vacantes mayor a 0')"
+            oninput="this.setCustomValidity('')"
+          >
+        </div>
+
+        <!-- Fecha de Inicio -->
+        <div class="form-group position-relative">
+          <label for="fecha_inicio">Fecha de Inicio</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            id="fecha_inicio" 
+            name="fecha_inicio"
+            required
+            oninvalid="this.setCustomValidity('Por favor, selecciona una fecha de inicio')"
+            oninput="this.setCustomValidity('')"
+          >
+        </div>
+
+        <!-- Fecha de Fin -->
+        <div class="form-group position-relative">
+          <label for="fecha_fin">Fecha de Fin</label>
+          <input 
+            type="date" 
+            class="form-control" 
+            id="fecha_fin" 
+            name="fecha_fin"
+            required
+            oninvalid="this.setCustomValidity('Por favor, selecciona una fecha de fin')"
+            oninput="this.setCustomValidity('')"
+          >
+        </div>
+
+        <!-- Selector de Empresa (solo para Admin); 
+             para Empresa/Empresario se asigna automáticamente en un input hidden -->
+        {% if request.session.rol == 'Admin' %}
+        <div class="form-group">
+          <label for="empresa_id">Empresa</label>
+          <select 
+            class="form-control" 
+            id="empresa_id" 
+            name="empresa_id" 
+            required
+            oninvalid="this.setCustomValidity('Selecciona la empresa a la que pertenece este proyecto')"
+            oninput="this.setCustomValidity('')"
+          >
+            <option value="">Selecciona una empresa</option>
+            {% for emp in empresas %}
+              <option value="{{ emp.id }}">{{ emp.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% else %}
+          <input type="hidden" name="empresa_id" value="{{ empresa_actual.id }}">
+        {% endif %}
+
+        <!-- Botón de Crear -->
+        <button type="submit" class="btn btn-new btn-block mt-4">Crear Proyecto</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const hoy = new Date().toISOString().split("T")[0];
+    document.getElementById('fecha_inicio').min = hoy;
+    document.getElementById('fecha_fin').min = hoy;
+  });
+</script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+{% endblock %}

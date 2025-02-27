@@ -4,9 +4,10 @@ from .firebase import obtener_usuario_por_correo,db
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from datetime import datetime
+from django.core.paginator import Paginator
 
-
-# restringe acceso a admin
+# restringe accesoS
 def admin_required(view_func):
     def wrapper(request, *args, **kwargs):
         if request.session.get('rol') != 'Admin':
@@ -14,6 +15,14 @@ def admin_required(view_func):
             return redirect('documentos:dashboard')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+def no_alumno_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.session.get('rol') == 'Alumno':
+            return redirect('documentos:dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 def login_view(request):
     if request.method == "POST":
         correo = request.POST.get('correo')
@@ -29,6 +38,14 @@ def login_view(request):
         else:
             messages.error(request, "Correo o contraseña incorrectos.")
     return render(request, 'login.html')
+
+def empresario_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.session.get('rol') not in ['Admin', 'Empresa', 'Empresario']:
+            messages.error(request, "No tienes permisos para acceder a esta sección.")
+            return redirect('documentos:dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 def dashboard(request):
     if 'correo' not in request.session:
@@ -48,7 +65,7 @@ def logout_view(request):
     messages.info(request, "Sesión cerrada.")
     return redirect('documentos:login')
 
-
+@no_alumno_required
 def crud_empresas(request):
     empresas = db.child("Empresas").get().val()
     lista_empresas = []
@@ -61,7 +78,6 @@ def crud_empresas(request):
             lista_empresas.append(empresa)
 
     return render(request, 'crud_empresas.html', {'empresas': lista_empresas})
-
 
 
 def crud_proyectos(request):
@@ -269,3 +285,237 @@ def eliminar_empresa(request, empresa_id):
     db.child("Empresas").child(empresa_id).remove()
     messages.success(request, "Empresa eliminada correctamente.")
     return redirect('documentos:crud_empresas')
+
+
+
+def admin_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.session.get('rol') != 'Admin':
+            messages.error(request, "No tienes permisos para acceder a esta sección.")
+            return redirect('documentos:dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+@no_alumno_required
+def crud_proyectos(request):
+    if 'correo' not in request.session:
+        messages.error(request, "Debes iniciar sesión.")
+        return redirect('documentos:login')
+    
+    rol = request.session.get('rol')
+    correo_usuario = request.session.get('correo')
+    
+    
+    proyectos_data = db.child("Proyectos").get().val() or {}
+    proyectos_list = []
+    for key, val in proyectos_data.items():
+        val['id'] = key
+        
+        empresa_data = db.child("Empresas").child(val.get("empresa_id")).get().val()
+        if empresa_data:
+            val['empresa_nombre'] = empresa_data.get('nombre', 'Sin Nombre')
+        else:
+            val['empresa_nombre'] = "Sin Empresa"
+        # Aseguramos un estado, por defecto "Abierto"
+        if "estado" not in val:
+            val["estado"] = "Abierto"
+        proyectos_list.append(val)
+    
+    # Si el usuario es Empresario, se muestran solo sus proyectos
+    if rol in ['Empresa', 'Empresario']:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val()
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+            proyectos_list = [p for p in proyectos_list if p.get("empresa_id") == empresa_id]
+        else:
+            messages.warning(request, "No se encontró la empresa asociada a tu usuario.")
+    
+    # Paginador
+    paginator = Paginator(proyectos_list, 10)
+    page = request.GET.get('page')
+    proyectos = paginator.get_page(page)
+    
+    
+    empresas = []
+    if rol == 'Admin':
+        empresas_data = db.child("Empresas").get().val() or {}
+        for key, val in empresas_data.items():
+            empresas.append({'id': key, 'nombre': val.get('nombre', 'Sin Nombre')})
+    
+    context = {
+        'proyectos': proyectos,
+        'empresas': empresas,
+    }
+    return render(request, 'crud_proyectos.html', context)
+
+
+@empresario_required
+def crear_proyecto(request):
+    if request.method == "POST":
+        titulo = request.POST.get('titulo', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        requisitos = request.POST.get('requisitos', '').strip()
+        vacantes = request.POST.get('vacantes', '').strip()
+        fecha_inicio = request.POST.get('fecha_inicio', '').strip()
+        fecha_fin = request.POST.get('fecha_fin', '').strip()
+        empresa_id = request.POST.get('empresa_id', '').strip()
+        rol = request.session.get('rol')
+        
+        # Validaciones 
+        if not (titulo and descripcion and requisitos and vacantes and fecha_inicio and fecha_fin):
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect('documentos:crear_proyecto')
+        try:
+            vacantes_num = int(vacantes)
+            if vacantes_num < 1:
+                messages.error(request, "El número de vacantes debe ser mayor a 0.")
+                return redirect('documentos:crear_proyecto')
+        except ValueError:
+            messages.error(request, "Vacantes debe ser un número válido.")
+            return redirect('documentos:crear_proyecto')
+        try:
+            inicio_dt = datetime.strptime(fecha_inicio, "%Y-%m-%d")
+            fin_dt = datetime.strptime(fecha_fin, "%Y-%m-%d")
+            if fin_dt < inicio_dt:
+                messages.error(request, "La fecha de fin no puede ser anterior a la de inicio.")
+                return redirect('documentos:crear_proyecto')
+        except ValueError:
+            messages.error(request, "Formato de fecha inválido.")
+            return redirect('documentos:crear_proyecto')
+        if len(requisitos) < 10:
+            messages.error(request, "Debes ingresar al menos uno o dos requisitos.")
+            return redirect('documentos:crear_proyecto')
+        
+        # Para usuarios de tipo Empresa o Empresario, asigna la empresa automaticamente basicamente
+        if rol in ['Empresa', 'Empresario']:
+            empresa_data = db.child("Empresas").order_by_child("correo").equal_to(request.session.get('correo')).get().val()
+            if empresa_data:
+                empresa_id = list(empresa_data.keys())[0]
+            else:
+                messages.error(request, "No se encontró tu empresa asociada.")
+                return redirect('documentos:crear_proyecto')
+        
+        nuevo_proyecto = {
+            "titulo": titulo,
+            "descripcion": descripcion,
+            "requisitos": requisitos,
+            "vacantes": vacantes_num,
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "empresa_id": empresa_id,
+            "estado": "Abierto"
+        }
+        db.child("Proyectos").push(nuevo_proyecto)
+        messages.success(request, "Proyecto creado exitosamente.")
+        return redirect('documentos:crud_proyectos')
+    else:
+        context = {}
+        if request.session.get('rol') == 'Admin':
+            empresas_data = db.child("Empresas").get().val() or {}
+            empresas = []
+            for key, val in empresas_data.items():
+                empresas.append({'id': key, 'nombre': val.get('nombre', 'Sin Nombre')})
+            context['empresas'] = empresas
+        else:
+            # Para usuarios de tipo Empresa o Empresario, se obtiene la empresa asociada
+            empresa_data = db.child("Empresas").order_by_child("correo").equal_to(request.session.get('correo')).get().val()
+            if empresa_data:
+                empresa_actual = {'id': list(empresa_data.keys())[0]}
+                context['empresa_actual'] = empresa_actual
+        return render(request, 'crear_proyecto.html', context)
+
+
+@empresario_required
+def editar_proyecto(request, proyecto_id):
+    rol = request.session.get('rol')
+    proyecto_data = db.child("Proyectos").child(proyecto_id).get().val()
+    if not proyecto_data:
+        messages.error(request, "Proyecto no encontrado.")
+        return redirect('documentos:crud_proyectos')
+    # Para usuarios de tipo Empresa o Empresario, verificar que el proyecto pertenezca a su empresa
+    if rol in ['Empresa', 'Empresario']:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(request.session.get('correo')).get().val()
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+            if proyecto_data.get("empresa_id") != empresa_id:
+                messages.error(request, "No puedes editar proyectos de otra empresa.")
+                return redirect('documentos:crud_proyectos')
+        else:
+            messages.error(request, "No se encontró tu empresa asociada.")
+            return redirect('documentos:crud_proyectos')
+    if request.method == "POST":
+        titulo = request.POST.get('titulo', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+        requisitos = request.POST.get('requisitos', '').strip()
+        vacantes = request.POST.get('vacantes', '').strip()
+        fecha_inicio = request.POST.get('fecha_inicio', '').strip()
+        fecha_fin = request.POST.get('fecha_fin', '').strip()
+        empresa_id = request.POST.get('empresa_id', '').strip()
+        
+        if not (titulo and descripcion and requisitos and vacantes and fecha_inicio and fecha_fin):
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        try:
+            vacantes_num = int(vacantes)
+            if vacantes_num < 1:
+                messages.error(request, "El número de vacantes debe ser mayor a 0.")
+                return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        except ValueError:
+            messages.error(request, "Vacantes debe ser un número válido.")
+            return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        try:
+            inicio_dt = datetime.strptime(fecha_inicio, "%Y-%m-%d")
+            fin_dt = datetime.strptime(fecha_fin, "%Y-%m-%d")
+            if fin_dt < inicio_dt:
+                messages.error(request, "La fecha de fin no puede ser anterior a la de inicio.")
+                return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        except ValueError:
+            messages.error(request, "Formato de fecha inválido.")
+            return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        if len(requisitos) < 10:
+            messages.error(request, "Debes ingresar al menos uno o dos requisitos.")
+            return redirect(reverse('documentos:editar_proyecto', args=[proyecto_id]))
+        
+        updates = {
+            "titulo": titulo,
+            "descripcion": descripcion,
+            "requisitos": requisitos,
+            "vacantes": vacantes_num,
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "empresa_id": empresa_id,
+        }
+        db.child("Proyectos").child(proyecto_id).update(updates)
+        messages.success(request, "Proyecto actualizado correctamente.")
+        return redirect('documentos:crud_proyectos')
+    else:
+        context = {'proyecto': proyecto_data, 'proyecto_id': proyecto_id}
+        if request.session.get('rol') == 'Admin':
+            empresas_data = db.child("Empresas").get().val() or {}
+            empresas = []
+            for key, val in empresas_data.items():
+                empresas.append({'id': key, 'nombre': val.get('nombre', 'Sin Nombre')})
+            context['empresas'] = empresas
+        return render(request, 'editar_proyecto.html', context)
+
+
+@empresario_required
+def eliminar_proyecto(request, proyecto_id):
+    rol = request.session.get('rol')
+    proyecto_data = db.child("Proyectos").child(proyecto_id).get().val()
+    if not proyecto_data:
+        messages.error(request, "Proyecto no encontrado.")
+        return redirect('documentos:crud_proyectos')
+    if rol in ['Empresa', 'Empresario']:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(request.session.get('correo')).get().val()
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+            if proyecto_data.get("empresa_id") != empresa_id:
+                messages.error(request, "No puedes eliminar proyectos de otra empresa.")
+                return redirect('documentos:crud_proyectos')
+        else:
+            messages.error(request, "No se encontró tu empresa asociada.")
+            return redirect('documentos:crud_proyectos')
+    db.child("Proyectos").child(proyecto_id).remove()
+    messages.success(request, "Proyecto eliminado correctamente.")
+    return redirect('documentos:crud_proyectos')

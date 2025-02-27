@@ -21,34 +21,34 @@
       <form method="POST" class="user">
         {% csrf_token %}
 
-        <!-- Campo oculto para enviar el ID de la empresa -->
+        
         <input type="hidden" name="empresa_id" value="{{ empresa.id }}">
 
-        <!-- Nombre de la empresa -->
+        
         <div class="form-group position-relative">
           <label for="nombre">Nombre de la Empresa</label>
           <input type="text" class="form-control" id="nombre" name="nombre" value="{{ empresa.nombre }}" required>
         </div>
 
-        <!-- RFC -->
+        
         <div class="form-group position-relative">
           <label for="rfc">RFC</label>
           <input type="text" class="form-control" id="rfc" name="rfc" value="{{ empresa.rfc }}" minlength="13" maxlength="13" required>
         </div>
 
-        <!-- Correo de contacto -->
+        
         <div class="form-group position-relative">
           <label for="correo">Correo de Contacto</label>
           <input type="email" class="form-control" id="correo" name="correo" value="{{ empresa.correo }}" required>
         </div>
 
-        <!-- Teléfono de contacto -->
+        
         <div class="form-group position-relative">
           <label for="telefono">Teléfono de Contacto</label>
           <input type="text" class="form-control" id="telefono" name="telefono" value="{{ empresa.telefono }}" pattern="[0-9]{10}" title="Debe contener 10 dígitos numéricos." required>
         </div>
 
-        <!-- Botón visible y funcional -->
+        
         <button type="submit" class="btn btn-new btn-block mt-4">Guardar Cambios</button>
       </form>
     </div>

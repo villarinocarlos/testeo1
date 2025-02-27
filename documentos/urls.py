@@ -19,4 +19,8 @@ urlpatterns = [
     path('empresas/crear/', views.crear_empresa, name="crear_empresa"),
     path('empresas/editar/<str:empresa_id>/', views.editar_empresa, name="editar_empresa"),
     path('empresas/eliminar/<str:empresa_id>/', views.eliminar_empresa, name="eliminar_empresa"),
+    path('proyectos/', views.crud_proyectos, name='crud_proyectos'),
+    path('proyectos/crear/', views.crear_proyecto, name='crear_proyecto'),
+    path('proyectos/editar/<str:proyecto_id>/', views.editar_proyecto, name='editar_proyecto'),
+    path('proyectos/eliminar/<str:proyecto_id>/', views.eliminar_proyecto, name='eliminar_proyecto'),
 ]
