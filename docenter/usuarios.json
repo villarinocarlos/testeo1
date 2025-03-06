@@ -1,75 +1,164 @@
 {
-    "Usuarios": {
-      "u1": {
-        "correo": "admin@edupracticas.com",
-        "contraseña": "Admin123",
-        "rol": "Admin"
-      },
-      "u2": {
-        "correo": "empresario@edupracticas.com",
-        "contraseña": "Empresario123",
-        "rol": "Empresario"
-      },
-      "u3": {
-        "correo": "alumno1@edupracticas.com",
-        "contraseña": "Alumno123",
-        "rol": "Alumno",
-        "matricula": "202300001",
-        "telefono": "55-1234-5678",
-        "creditos": 200,
-        "semestre": 7
-      },
-      "u4": {
-        "correo": "alumno2@edupracticas.com",
-        "contraseña": "Alumno456",
-        "rol": "Alumno",
-        "matricula": "202300002",
-        "telefono": "55-2345-6789",
-        "creditos": 220,
-        "semestre": 8
-      }
+  "Empresas": {
+    "-OK2WTs3uzw78u6QLiwD": {
+      "correo": "sergio@gmail.com",
+      "nombre": "Sergio Panti",
+      "rfc": "FAXD010141088",
+      "telefono": "9812078834"
     },
-    "Empresas": {
-      "e1": {
-        "nombre": "Empresa Innovadora",
-        "rfc": "XAXX010101000",
-        "contacto": "contacto@empresa.com",
-        "proyectos": {
-          "p1": true,
-          "p2": true
-        }
-      },
-      "e2": {
-        "nombre": "Soluciones Tecnológicas",
-        "rfc": "TCHS010101XXX",
-        "contacto": "info@soluciones.com",
-        "proyectos": {
-          "p3": true
-        }
-      }
+    "-OK6ivbiKpt4MovxH42G": {
+      "correo": "villarinocarlos75@gmail.com",
+      "nombre": "Apple",
+      "rfc": "ABCDEFGHIJK13",
+      "telefono": "9812078831"
     },
-    "Proyectos": {
-      "p1": {
-        "empresaId": "e1",
-        "titulo": "Desarrollo Web",
-        "descripcion": "Crear una plataforma de gestión de prácticas con Django y Firebase.",
-        "vacantes": 3,
-        "requisitos": "Conocimientos en Python y Django"
-      },
-      "p2": {
-        "empresaId": "e1",
-        "titulo": "Aplicación Móvil",
-        "descripcion": "Desarrollar una aplicación móvil para seguimiento de prácticas.",
-        "vacantes": 2,
-        "requisitos": "Conocimientos en React Native"
-      },
-      "p3": {
-        "empresaId": "e2",
-        "titulo": "Análisis de Datos",
-        "descripcion": "Realizar análisis de datos para optimizar procesos internos.",
-        "vacantes": 1,
-        "requisitos": "Conocimientos en Python y Pandas"
-      }
+    "-OKcBFLE6PYbVqDZ2Qo7": {
+      "correo": "test2@gmail.com",
+      "nombre": "XBOX",
+      "rfc": "FAXD010101000",
+      "telefono": "9812088311"
+    }
+  },
+  "Postulaciones": {
+    "-OKbzrtuXFViF9vQ3g1r": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "estado": "Cancelada",
+      "fecha_postulacion": "2025-03-05",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
+      "carrera": "Ingeniería en Sistemas",
+      "habilidades": "Flutter, SQL, Git",
+      "razon_interes": "Deseo aplicar mis conocimientos en un proyecto real"
+    },
+    "-OKc4ZCk73t-w3BJsvlK": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "estado": "Pendiente",
+      "fecha_postulacion": "2025-03-05",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
+      "carrera": "Ingeniería en Sistemas",
+      "habilidades": "Python, Ingles",
+      "razon_interes": "Me interesa adquirir experiencia profesional"
+    },
+    "-OKcA_4A6mLjpwctX5Q3": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "estado": "Pendiente",
+      "fecha_postulacion": "2025-03-05",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK6j8OqZOASDh3sVlNs",
+      "carrera": "Ingeniería en Sistemas",
+      "habilidades": "Flutter, programación móvil",
+      "razon_interes": "Quiero aplicar mis conocimientos de Flutter en un proyecto real"
+    },
+    "-OKcBm73IbRam7Au-UGG": {
+      "alumno_id": "-OKcBcC0M_Ud47rZc4cw",
+      "estado": "Pendiente",
+      "fecha_postulacion": "2025-03-05",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OKcBRmbHC364rSW7t38",
+      "carrera": "Licenciatura en Informática",
+      "habilidades": "SQL, trabajo en equipo, Git",
+      "razon_interes": "Busco un proyecto que me permita mejorar mis habilidades en SQL"
+    },
+    "-Post001": {
+      "alumno_id": "-Usr003",
+      "estado": "Cancelada",
+      "fecha_postulacion": "2025-03-15",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
+      "carrera": "Ingeniería Industrial",
+      "habilidades": "Liderazgo, Excel avanzado",
+      "razon_interes": "Me gustaría aprender de un entorno profesional y mejorar mi CV"
+    },
+    "-Post002": {
+      "alumno_id": "-Usr003",
+      "estado": "Cancelada",
+      "fecha_postulacion": "2025-03-16",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
+      "carrera": "Ingeniería Industrial",
+      "habilidades": "Manejo de proyectos, comunicación efectiva",
+      "razon_interes": "Busco un proyecto que me permita implementar metodologías de trabajo"
+    }
+  },
+  "Proyectos": {
+    "-OK2XAoMVzfMogr4Yc4c": {
+      "descripcion": "hola",
+      "empresa_id": "-OK2WTs3uzw78u6QLiwD",
+      "estado": "Abierto",
+      "fecha_fin": "2025-04-30",
+      "fecha_inicio": "2025-03-05",
+      "requisitos": "ingles,python",
+      "titulo": "empresa super importante",
+      "vacantes": 3
+    },
+    "-OK4i4r1wkNJOwi9SACI": {
+      "descripcion": "trabajo en linea",
+      "empresa_id": "-OK2WTs3uzw78u6QLiwD",
+      "estado": "Abierto",
+      "fecha_fin": "2025-04-30",
+      "fecha_inicio": "2025-03-13",
+      "requisitos": "excel,ingles",
+      "titulo": "equipo",
+      "vacantes": 3
+    },
+    "-OK6j8OqZOASDh3sVlNs": {
+      "descripcion": "desarrollador que use flutter",
+      "empresa_id": "-OK6ivbiKpt4MovxH42G",
+      "estado": "Abierto",
+      "fecha_fin": "2025-02-28",
+      "fecha_inicio": "2025-02-27",
+      "requisitos": "flutter,programacion",
+      "titulo": "Desarrollador Web",
+      "vacantes": 5
+    },
+    "-OKcBRmbHC364rSW7t38": {
+      "descripcion": "saber flutter y tener experiencia",
+      "empresa_id": "-OKcBFLE6PYbVqDZ2Qo7",
+      "estado": "Abierto",
+      "fecha_fin": "2025-03-31",
+      "fecha_inicio": "2025-03-05",
+      "requisitos": "flutter,programacion,sql",
+      "titulo": "Programador experimentado",
+      "vacantes": 2
+    }
+  },
+  "Usuarios": {
+    "-OKbYuqZ4_Uc-8zKx3Gc": {
+      "contraseña": "Admin1",
+      "correo": "test@gmail.com",
+      "creditos": 300,
+      "matricula": "1234567890",
+      "rol": "Alumno",
+      "semestre": 8,
+      "telefono": "9812076835"
+    },
+    "-OKcB95xjaf_gUu3Oy16": {
+      "contraseña": "Admin1",
+      "correo": "test2@gmail.com",
+      "rol": "Empresario"
+    },
+    "-OKcBcC0M_Ud47rZc4cw": {
+      "contraseña": "Admin1",
+      "correo": "cvendetta04@gmail.com",
+      "creditos": 200,
+      "matricula": "1234568890",
+      "rol": "Alumno",
+      "semestre": 7,
+      "telefono": "9812028831"
+    },
+    "-Usr001": {
+      "contraseña": "Admin1",
+      "correo": "villarinocarlos75@gmail.com",
+      "nombre": "Carlos Villarino",
+      "rol": "Admin"
+    },
+    "-Usr002": {
+      "contraseña": "Admin1",
+      "correo": "sergio@gmail.com",
+      "nombre": "Sergio García",
+      "rol": "Empresario"
     }
   }
-  
+}
+

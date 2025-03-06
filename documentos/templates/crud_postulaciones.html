@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Gestión de Postulaciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="text-center mb-3">
+    <h1 class="h3 text-dark">Gestión de Postulaciones</h1>
+  </div>
+
+  
+  <div class="row justify-content-center mb-3">
+    <div class="col-lg-6">
+      <input type="text" id="searchInput" class="form-control" placeholder="Buscar postulación..." onkeyup="filtrarPostulaciones()">
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered" id="postulacionesTable" style="min-width: 800px; color: #000;">
+      <thead style="background: #0A2F58; color: #fff;">
+        <tr>
+          <th>Proyecto</th>
+          <th>Correo</th> 
+          <th>Fecha</th>
+          <th>Estado</th>
+          <th>Motivo de Rechazo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #fff;">
+        {% for post in postulaciones %}
+        <tr>
+          <td>{{ post.proyecto_titulo }}</td>
+          <td>{{ post.alumno_correo|default:"-" }}</td> 
+          <td>{{ post.fecha_postulacion }}</td>
+          <td>{{ post.estado }}</td>
+          <td>{{ post.motivo_rechazo|default:"-" }}</td>
+          <td>
+            <a href="{% url 'documentos:actualizar_postulacion' post.id %}" class="btn btn-warning btn-sm">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No hay postulaciones registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function filtrarPostulaciones() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const table = document.getElementById('postulacionesTable');
+    const trs = table.getElementsByTagName('tr');
+    for (let i = 1; i < trs.length; i++) {
+      let match = false;
+      const tds = trs[i].getElementsByTagName('td');
+      for (let j = 0; j < tds.length - 1; j++) {
+        if (tds[j].innerText.toLowerCase().includes(input)) {
+          match = true;
+          break;
+        }
+      }
+      trs[i].style.display = match ? '' : 'none';
+    }
+  }
+</script>
+{% endblock %}

@@ -23,4 +23,11 @@ urlpatterns = [
     path('proyectos/crear/', views.crear_proyecto, name='crear_proyecto'),
     path('proyectos/editar/<str:proyecto_id>/', views.editar_proyecto, name='editar_proyecto'),
     path('proyectos/eliminar/<str:proyecto_id>/', views.eliminar_proyecto, name='eliminar_proyecto'),
+    path('postulaciones/mis/', views.mis_postulaciones, name='mis_postulaciones'),
+    path('postulaciones/crear/<str:proyecto_id>/', views.crear_postulacion, name='crear_postulacion'),
+    path('postulaciones/cancelar/<str:postulacion_id>/', views.cancelar_postulacion, name='cancelar_postulacion'),
+    path('postulaciones/', views.listar_postulaciones, name='crud_postulaciones'),
+    path('postulaciones/editar/<str:postulacion_id>/', views.actualizar_postulacion, name='actualizar_postulacion'),
+     path('proyectos/catalogo/', views.catalogo_proyectos, name='catalogo_proyectos'),
+     
 ]

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Mis Postulaciones{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="text-center mb-3">
+    <h1 class="h3 text-dark">Mis Postulaciones</h1>
+  </div>
+
+  
+  <div class="table-responsive">
+    <table class="table table-bordered" style="min-width: 800px; color: #000;">
+      <thead style="background: #0A2F58; color: #fff;">
+        <tr>
+          <th>Proyecto</th>
+          <th>Matrícula</th>
+          <th>Fecha de Postulación</th>
+          <th>Estado</th>
+          <th>Motivo de Rechazo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #fff;">
+        {% for post in postulaciones %}
+        <tr>
+          <td>{{ post.proyecto_titulo }}</td>
+          <td>{{ post.matricula|default:"-" }}</td>
+          <td>{{ post.fecha_postulacion }}</td>
+          <td>{{ post.estado }}</td>
+          <td>{{ post.motivo_rechazo|default:"-" }}</td>
+          <td>
+            {% if post.estado == "Pendiente" %}
+              
+              <button class="btn btn-danger btn-sm" onclick="confirmarCancelacion('{{ post.id }}')">
+                Cancelar
+              </button>
+            {% elif post.estado == "Cancelada" %}
+              <small class="text-muted">Postulación cancelada</small>
+            {% else %}
+              <small>Sin acción</small>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No tienes postulaciones registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function confirmarCancelacion(postId) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esta acción.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'Volver'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = "/postulaciones/cancelar/" + postId + "/";
+      }
+    });
+  }
+</script>
+{% endblock %}

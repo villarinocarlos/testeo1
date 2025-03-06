@@ -71,6 +71,26 @@
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_postulaciones' %}">
+          <i class="fas fa-file-alt"></i>
+          <span>Postulaciones</span>
+        </a>
+      </li>
+      {% if request.session.rol == "Alumno" %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:catalogo_proyectos' %}">
+          <i class="fas fa-briefcase"></i>
+          <span>Proyectos Disponibles</span>
+        </a>
+      </li>
+      {% endif %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:mis_postulaciones' %}">
+          <i class="fas fa-file-alt"></i>
+          <span>Mis Postulaciones</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="fas fa-tools"></i>
           <span>Seguimiento de Prácticas</span>

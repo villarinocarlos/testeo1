@@ -8,6 +8,13 @@ from datetime import datetime
 from django.core.paginator import Paginator
 
 # restringe accesoS
+def admin_o_empresa_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.session.get('rol') not in ['Admin', 'Empresa', 'Empresario']:
+            return redirect('documentos:dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 def admin_required(view_func):
     def wrapper(request, *args, **kwargs):
         if request.session.get('rol') != 'Admin':
@@ -19,6 +26,14 @@ def admin_required(view_func):
 def no_alumno_required(view_func):
     def wrapper(request, *args, **kwargs):
         if request.session.get('rol') == 'Alumno':
+            return redirect('documentos:dashboard')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def alumno_required(view_func):
+    """Decorador que restringe el acceso a usuarios con rol Alumno."""
+    def wrapper(request, *args, **kwargs):
+        if request.session.get('rol') != 'Alumno':
             return redirect('documentos:dashboard')
         return view_func(request, *args, **kwargs)
     return wrapper
@@ -316,12 +331,12 @@ def crud_proyectos(request):
             val['empresa_nombre'] = empresa_data.get('nombre', 'Sin Nombre')
         else:
             val['empresa_nombre'] = "Sin Empresa"
-        # Aseguramos un estado, por defecto "Abierto"
+        
         if "estado" not in val:
             val["estado"] = "Abierto"
         proyectos_list.append(val)
     
-    # Si el usuario es Empresario, se muestran solo sus proyectos
+    
     if rol in ['Empresa', 'Empresario']:
         empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val()
         if empresa_data:
@@ -519,3 +534,196 @@ def eliminar_proyecto(request, proyecto_id):
     db.child("Proyectos").child(proyecto_id).remove()
     messages.success(request, "Proyecto eliminado correctamente.")
     return redirect('documentos:crud_proyectos')
+
+
+@alumno_required
+def crear_postulacion(request, proyecto_id):
+    """
+    Permite que el alumno se postule a un proyecto.
+    Antes de crear la postulación, se verifica que el alumno no se haya postulado ya al mismo proyecto.
+    """
+    if 'correo' not in request.session:
+        messages.error(request, "Debes iniciar sesión.")
+        return redirect('documentos:login')
+
+    if request.method == "POST":
+        
+        correo_alumno = request.session.get('correo')
+        alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
+        if not alumno_data:
+            messages.error(request, "No se encontró tu perfil de alumno.")
+            return redirect('documentos:dashboard')
+        alumno_key = list(alumno_data.keys())[0]
+
+        
+        postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
+        for key, post in postulaciones_data.items():
+            if post.get("proyecto_id") == proyecto_id:
+                messages.error(request, "Ya te has postulado a este proyecto.")
+                return redirect('documentos:mis_postulaciones')
+
+        
+        carrera = request.POST.get('carrera', '').strip()
+        habilidades = request.POST.get('habilidades', '').strip()
+        razon_interes = request.POST.get('razon_interes', '').strip()
+
+        
+        nueva_postulacion = {
+            "alumno_id": alumno_key,
+            "proyecto_id": proyecto_id,
+            "fecha_postulacion": datetime.now().strftime("%Y-%m-%d"),
+            "estado": "Pendiente",
+            "motivo_rechazo": "",
+            "carrera": carrera,
+            "habilidades": habilidades,
+            "razon_interes": razon_interes
+        }
+        db.child("Postulaciones").push(nueva_postulacion)
+        messages.success(request, "Te has postulado correctamente.")
+        return redirect('documentos:mis_postulaciones')
+
+    
+    return redirect('documentos:dashboard')
+
+
+@alumno_required
+def mis_postulaciones(request):
+    if 'correo' not in request.session:
+        messages.error(request, "Debes iniciar sesión.")
+        return redirect('documentos:login')
+
+    correo_alumno = request.session.get('correo')
+    alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
+    if not alumno_data:
+        messages.error(request, "No se encontró tu perfil de alumno.")
+        return redirect('documentos:login')
+
+    alumno_key = list(alumno_data.keys())[0]
+    postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
+
+    lista_postulaciones = []
+    for key, val in postulaciones_data.items():
+        
+        if val.get("estado") not in ["Pendiente", "Aceptada"]:
+            continue
+        val["id"] = key
+        
+        proyecto_info = db.child("Proyectos").child(val.get("proyecto_id")).get().val() or {}
+        val["proyecto_titulo"] = proyecto_info.get("titulo", "Proyecto desconocido")
+        
+        alumno_info = db.child("Usuarios").child(alumno_key).get().val() or {}
+        val["alumno_correo"] = alumno_info.get("correo", "")
+        lista_postulaciones.append(val)
+
+    return render(request, "mis_postulaciones.html", {
+        "postulaciones": lista_postulaciones
+    })
+
+
+@admin_o_empresa_required
+def listar_postulaciones(request):
+    rol = request.session.get('rol')
+    correo_usuario = request.session.get('correo')
+
+    postulaciones_data = db.child("Postulaciones").get().val() or {}
+    lista_post = []
+
+    for key, val in postulaciones_data.items():
+        val["id"] = key
+        
+        proyecto_info = db.child("Proyectos").child(val.get("proyecto_id")).get().val() or {}
+        val["proyecto_titulo"] = proyecto_info.get("titulo", "Proyecto desconocido")
+        val["empresa_id"] = proyecto_info.get("empresa_id")
+        
+        alumno_info = db.child("Usuarios").child(val.get("alumno_id")).get().val() or {}
+        val["alumno_correo"] = alumno_info.get("correo", "")
+        lista_post.append(val)
+
+    
+    lista_post = [p for p in lista_post if p.get("estado") != "Rechazada"]
+
+    
+    if rol in ["Empresa", "Empresario"]:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val() or {}
+        if empresa_data:
+            emp_key = list(empresa_data.keys())[0]
+            lista_post = [p for p in lista_post if p.get("empresa_id") == emp_key]
+
+    return render(request, 'crud_postulaciones.html', {
+        "postulaciones": lista_post
+    })
+
+
+@admin_o_empresa_required
+def actualizar_postulacion(request, postulacion_id):
+    post_data = db.child("Postulaciones").child(postulacion_id).get().val()
+    if not post_data:
+        messages.error(request, "Postulación no encontrada.")
+        return redirect('documentos:crud_postulaciones')  
+
+    if request.method == "POST":
+        nuevo_estado = request.POST.get('estado', '')
+        nuevo_motivo = request.POST.get('motivo_rechazo', '').strip()
+
+        updates = {
+            "estado": nuevo_estado,
+            "motivo_rechazo": nuevo_motivo if nuevo_estado == "Rechazada" else ""
+        }
+        db.child("Postulaciones").child(postulacion_id).update(updates)
+        messages.success(request, "La postulación se ha actualizado correctamente.")
+        return redirect('documentos:crud_postulaciones')  
+    else:
+        return render(request, "editar_postulacion.html", {
+            "postulacion": post_data,
+            "postulacion_id": postulacion_id
+        })
+
+
+@alumno_required
+def cancelar_postulacion(request, postulacion_id):
+    """
+    Permite al alumno cancelar una postulación si está en estado "Pendiente".
+    """
+    post_data = db.child("Postulaciones").child(postulacion_id).get().val()
+    if not post_data:
+        messages.error(request, "Postulación no encontrada.")
+        return redirect('documentos:mis_postulaciones')  
+
+    
+    correo_alumno = request.session.get('correo')
+    alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
+    if not alumno_data:
+        messages.error(request, "No se encontró tu perfil de alumno.")
+        return redirect('documentos:mis_postulaciones')
+    
+    alumno_key = list(alumno_data.keys())[0]
+    if post_data.get("alumno_id") != alumno_key:
+        return redirect('documentos:mis_postulaciones')
+
+   
+    if post_data.get("estado") == "Pendiente":
+        db.child("Postulaciones").child(postulacion_id).update({"estado": "Cancelada"})
+        messages.success(request, "Has cancelado tu postulación.")
+    else:
+        messages.error(request, "No puedes cancelar esta postulación, ya ha sido revisada.")
+
+    return redirect('documentos:mis_postulaciones')
+
+@alumno_required
+def catalogo_proyectos(request):
+    
+    proyectos_data = db.child("Proyectos").order_by_child("estado").equal_to("Abierto").get().val() or {}
+    proyectos_list = []
+    for key, proyecto in proyectos_data.items():
+        proyecto["id"] = key
+        
+        empresa = db.child("Empresas").child(proyecto.get("empresa_id")).get().val() or {}
+        proyecto["empresa_nombre"] = empresa.get("nombre", "Empresa desconocida")
+        proyectos_list.append(proyecto)
+    
+    
+    paginator = Paginator(proyectos_list, 10)
+    page = request.GET.get("page")
+    proyectos = paginator.get_page(page)
+    
+    return render(request, "catalogo_proyectos.html", {"proyectos": proyectos})

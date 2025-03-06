@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Detalles de la Postulación - EduPrácticas{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      
+      
+      <div class="card shadow-sm" style="border: 1px solid #0A2F58;">
+        <div class="card-header" style="background-color: #0A2F58; color: white;">
+          <h4 class="mb-0">Detalles de la Postulación</h4>
+        </div>
+        
+        
+        <div class="card-body p-4" style="background-color: #fff;">
+          <form method="POST">
+            {% csrf_token %}
+            
+            
+            <h5 class="fw-bold" style="color: #0A2F58;">Información del Estudiante</h5>
+            <hr class="mt-1 mb-4">
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold" style="color: #0A2F58;">Carrera</label>
+              <p class="form-control-plaintext">{{ postulacion.carrera|default:"No especificado" }}</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold" style="color: #0A2F58;">Habilidades</label>
+              <p class="form-control-plaintext">{{ postulacion.habilidades|default:"No especificado" }}</p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-bold" style="color: #0A2F58;">Razón de Interés</label>
+              <p class="form-control-plaintext">{{ postulacion.razon_interes|default:"No especificado" }}</p>
+            </div>
+            
+            
+            <h5 class="fw-bold mt-5" style="color: #0A2F58;">Actualizar Postulación</h5>
+            <hr class="mt-1 mb-4">
+            
+            <div class="mb-3">
+              <label for="estado" class="form-label fw-bold" style="color: #0A2F58;">Estado</label>
+              <select id="estado" name="estado" class="form-select">
+                <option value="Pendiente" {% if postulacion.estado == "Pendiente" %}selected{% endif %}>Pendiente</option>
+                <option value="Aceptada" {% if postulacion.estado == "Aceptada" %}selected{% endif %}>Aceptada</option>
+                <option value="Rechazada" {% if postulacion.estado == "Rechazada" %}selected{% endif %}>Rechazada</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="motivo_rechazo" class="form-label fw-bold" style="color: #0A2F58;">Motivo de Rechazo (opcional)</label>
+              <textarea id="motivo_rechazo" name="motivo_rechazo" class="form-control" rows="3" placeholder="Ingresa el motivo de rechazo...">{{ postulacion.motivo_rechazo }}</textarea>
+            </div>
+            
+            <div class="text-end mt-4">
+              <button type="submit" class="btn btn-success rounded-pill px-4 py-2">
+                Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div> 
+      </div> 
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
