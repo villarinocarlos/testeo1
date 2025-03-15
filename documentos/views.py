@@ -1,11 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .firebase import obtener_usuario_por_correo,db
+from .firebase import obtener_usuario_por_correo,db,firebase
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import datetime
 from django.core.paginator import Paginator
+from django.template.loader import render_to_string
+from django.core.files import File
+from django.core.files.storage import default_storage
+from django.conf import settings
+from .utils import generar_pdf_xhtml2pdf, subir_pdf_a_storage
+import os
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # restringe accesoS
 def admin_o_empresa_required(view_func):
@@ -68,10 +77,20 @@ def dashboard(request):
         return redirect('documentos:login')
 
     usuarios = db.child("Usuarios").get().val()  
+    # Obtener notificaciones
+    notificaciones_data = db.child("Notificaciones").get().val() or {}
+    notificaciones = []
+    for key, notif in notificaciones_data.items():
+        # Filtrar las notificaciones por el rol del usuario actual
+        if notif.get("rol") == request.session.get("rol"):
+            notif["id"] = key
+            notificaciones.append(notif)
+    
     return render(request, 'dashboard.html', {
         "usuarios": usuarios,
-        "usuario_actual": request.session.get('correo'),
-        "rol_actual": request.session.get('rol')
+        "usuario_actual": request.session.get("correo"),
+        "rol_actual": request.session.get("rol"),
+        "notificaciones": notificaciones
     })
 
 
@@ -119,14 +138,14 @@ def crear_usuario(request):
         matricula = request.POST.get('matricula', '').strip()
         telefono = request.POST.get('telefono', '').strip()
 
-        # Verificar si el correo ya existe
+        # Verifica si el correo ya existe
         usuarios = db.child("Usuarios").get().val() or {}
         for key, data in usuarios.items():
             if data.get("correo") == correo:
                 messages.error(request, "El usuario ya está en uso.")
                 return redirect('documentos:crear_usuario')
 
-        # Si el rol es Alumno, verificar que cumpla con los requisitos minimos y que matricula y teléfono estén informados
+        # Si el rol es Alumno, verifica que cumpla con los requisitos minimos y que matricula y teléfono estén informados
         if rol == "Alumno":
             c = int(creditos) if creditos else 0
             s = int(semestre) if semestre else 0
@@ -535,19 +554,13 @@ def eliminar_proyecto(request, proyecto_id):
     messages.success(request, "Proyecto eliminado correctamente.")
     return redirect('documentos:crud_proyectos')
 
-
 @alumno_required
 def crear_postulacion(request, proyecto_id):
-    """
-    Permite que el alumno se postule a un proyecto.
-    Antes de crear la postulación, se verifica que el alumno no se haya postulado ya al mismo proyecto.
-    """
     if 'correo' not in request.session:
         messages.error(request, "Debes iniciar sesión.")
         return redirect('documentos:login')
 
     if request.method == "POST":
-        
         correo_alumno = request.session.get('correo')
         alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
         if not alumno_data:
@@ -555,19 +568,16 @@ def crear_postulacion(request, proyecto_id):
             return redirect('documentos:dashboard')
         alumno_key = list(alumno_data.keys())[0]
 
-        
         postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
         for key, post in postulaciones_data.items():
             if post.get("proyecto_id") == proyecto_id:
                 messages.error(request, "Ya te has postulado a este proyecto.")
                 return redirect('documentos:mis_postulaciones')
 
-        
         carrera = request.POST.get('carrera', '').strip()
         habilidades = request.POST.get('habilidades', '').strip()
         razon_interes = request.POST.get('razon_interes', '').strip()
 
-        
         nueva_postulacion = {
             "alumno_id": alumno_key,
             "proyecto_id": proyecto_id,
@@ -580,11 +590,24 @@ def crear_postulacion(request, proyecto_id):
         }
         db.child("Postulaciones").push(nueva_postulacion)
         messages.success(request, "Te has postulado correctamente.")
+
+        # Guardar notificación para el empresario:
+        proyecto = db.child("Proyectos").child(proyecto_id).get().val() or {}
+        empresa_id = proyecto.get("empresa_id")
+        if empresa_id:
+            empresa_data = db.child("Empresas").child(empresa_id).get().val() or {}
+            correo_empresario = empresa_data.get("correo")
+            if correo_empresario:
+                # Almacena la notificación en el nodo "Notificaciones" con rol "Empresario"
+                notificacion = {
+                    "rol": "Empresario",
+                    "mensaje": "Un alumno se ha postulado a tu proyecto.",
+                    "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                db.child("Notificaciones").push(notificacion)
+
         return redirect('documentos:mis_postulaciones')
-
-    
     return redirect('documentos:dashboard')
-
 
 @alumno_required
 def mis_postulaciones(request):
@@ -603,16 +626,20 @@ def mis_postulaciones(request):
 
     lista_postulaciones = []
     for key, val in postulaciones_data.items():
-        
+        # Mostrar solo postulaciones activas (Pendiente y Aceptada)
         if val.get("estado") not in ["Pendiente", "Aceptada"]:
             continue
         val["id"] = key
         
+        # Obtener título del proyecto
         proyecto_info = db.child("Proyectos").child(val.get("proyecto_id")).get().val() or {}
         val["proyecto_titulo"] = proyecto_info.get("titulo", "Proyecto desconocido")
         
+        # Obtener datos del alumno (correo y matrícula)
         alumno_info = db.child("Usuarios").child(alumno_key).get().val() or {}
         val["alumno_correo"] = alumno_info.get("correo", "")
+        val["matricula"] = alumno_info.get("matricula", "")  # Asegúrate de que en la base de datos se guarde este campo
+        
         lista_postulaciones.append(val)
 
     return render(request, "mis_postulaciones.html", {
@@ -652,15 +679,13 @@ def listar_postulaciones(request):
     return render(request, 'crud_postulaciones.html', {
         "postulaciones": lista_post
     })
-
-
 @admin_o_empresa_required
 def actualizar_postulacion(request, postulacion_id):
     post_data = db.child("Postulaciones").child(postulacion_id).get().val()
     if not post_data:
         messages.error(request, "Postulación no encontrada.")
-        return redirect('documentos:crud_postulaciones')  
-
+        return redirect('documentos:crud_postulaciones')
+    
     if request.method == "POST":
         nuevo_estado = request.POST.get('estado', '')
         nuevo_motivo = request.POST.get('motivo_rechazo', '').strip()
@@ -670,8 +695,22 @@ def actualizar_postulacion(request, postulacion_id):
             "motivo_rechazo": nuevo_motivo if nuevo_estado == "Rechazada" else ""
         }
         db.child("Postulaciones").child(postulacion_id).update(updates)
+        
+        # Si el estado se actualiza a "Aceptada" o "Rechazada", notificar al alumno
+        if nuevo_estado in ["Aceptada", "Rechazada"]:
+            alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
+            if alumno:
+                correo_alumno = alumno.get("correo")
+                if correo_alumno:
+                    notificacion = {
+                        "rol": "Alumno",
+                        "mensaje": "Tu postulación ha sido aceptada." if nuevo_estado == "Aceptada" else "Tu postulación ha sido rechazada.",
+                        "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    db.child("Notificaciones").push(notificacion)
+        
         messages.success(request, "La postulación se ha actualizado correctamente.")
-        return redirect('documentos:crud_postulaciones')  
+        return redirect('documentos:crud_postulaciones')
     else:
         return render(request, "editar_postulacion.html", {
             "postulacion": post_data,
@@ -727,3 +766,53 @@ def catalogo_proyectos(request):
     proyectos = paginator.get_page(page)
     
     return render(request, "catalogo_proyectos.html", {"proyectos": proyectos})
+def generar_carta_local(request, postulacion_id):
+    """
+    Genera la carta en PDF a partir de los datos del alumno, proyecto y empresa,
+    la guarda localmente en MEDIA_ROOT y actualiza la postulación con la URL del PDF.
+    """
+    
+    post_data = db.child("Postulaciones").child(postulacion_id).get().val()
+    if not post_data:
+        messages.error(request, "Postulación no encontrada.")
+        return redirect('documentos:crud_postulaciones')
+    
+    
+    alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
+    proyecto = db.child("Proyectos").child(post_data["proyecto_id"]).get().val()
+    empresa = db.child("Empresas").child(proyecto["empresa_id"]).get().val()
+    
+    
+    pdf_path = generar_pdf_xhtml2pdf(alumno, proyecto, empresa)
+    
+    
+    relative_path = f"cartas/carta_{postulacion_id}.pdf"
+    full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+    
+    
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    
+    
+    with open(pdf_path, "rb") as f:
+        file_content = File(f)
+        saved_path = default_storage.save(relative_path, file_content)
+    
+   
+    url_pdf = settings.MEDIA_URL + saved_path
+
+    
+    db.child("Postulaciones").child(postulacion_id).update({"url_carta": url_pdf})
+    
+    messages.success(request, "La carta se ha generado y está disponible para descarga.")
+    return redirect('documentos:crud_postulaciones')
+
+@csrf_exempt
+def limpiar_notificaciones(request):
+    if request.method == "POST":
+        rol_actual = request.session.get("rol")
+        notificaciones_data = db.child("Notificaciones").get().val() or {}
+        for key, notif in notificaciones_data.items():
+            if notif.get("rol") == rol_actual:
+                db.child("Notificaciones").child(key).remove()
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"error": "Método no permitido"}, status=405)

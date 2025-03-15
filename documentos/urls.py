@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import limpiar_notificaciones
 
 app_name = 'documentos'  
 
@@ -28,6 +29,8 @@ urlpatterns = [
     path('postulaciones/cancelar/<str:postulacion_id>/', views.cancelar_postulacion, name='cancelar_postulacion'),
     path('postulaciones/', views.listar_postulaciones, name='crud_postulaciones'),
     path('postulaciones/editar/<str:postulacion_id>/', views.actualizar_postulacion, name='actualizar_postulacion'),
-     path('proyectos/catalogo/', views.catalogo_proyectos, name='catalogo_proyectos'),
-     
+    path('proyectos/catalogo/', views.catalogo_proyectos, name='catalogo_proyectos'),
+    path('postulaciones/generar_carta_local/<str:postulacion_id>/', views.generar_carta_local, name='generar_carta_local'),
+     path("limpiar_notificaciones/", limpiar_notificaciones, name="limpiar_notificaciones"),
 ]
+

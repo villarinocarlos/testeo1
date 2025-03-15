@@ -22,62 +22,84 @@
   "Postulaciones": {
     "-OKbzrtuXFViF9vQ3g1r": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
-      "estado": "Cancelada",
+      "carrera": "Ingeniería en Sistemas",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-05",
+      "habilidades": "Flutter, SQL, Git",
       "motivo_rechazo": "",
       "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
-      "carrera": "Ingeniería en Sistemas",
-      "habilidades": "Flutter, SQL, Git",
       "razon_interes": "Deseo aplicar mis conocimientos en un proyecto real"
     },
     "-OKc4ZCk73t-w3BJsvlK": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
-      "estado": "Pendiente",
+      "carrera": "Ingeniería en Sistemas",
+      "estado": "Aceptada",
       "fecha_postulacion": "2025-03-05",
+      "habilidades": "Python, Ingles",
       "motivo_rechazo": "",
       "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
-      "carrera": "Ingeniería en Sistemas",
-      "habilidades": "Python, Ingles",
-      "razon_interes": "Me interesa adquirir experiencia profesional"
+      "razon_interes": "Me interesa adquirir experiencia profesional",
+      "url_carta": "/media/cartas/carta_-OKc4ZCk73t-w3BJsvlK_WaaFacS.pdf"
     },
     "-OKcA_4A6mLjpwctX5Q3": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
-      "estado": "Pendiente",
+      "carrera": "Ingeniería en Sistemas",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-05",
+      "habilidades": "Flutter, programación móvil",
       "motivo_rechazo": "",
       "proyecto_id": "-OK6j8OqZOASDh3sVlNs",
-      "carrera": "Ingeniería en Sistemas",
-      "habilidades": "Flutter, programación móvil",
       "razon_interes": "Quiero aplicar mis conocimientos de Flutter en un proyecto real"
     },
     "-OKcBm73IbRam7Au-UGG": {
       "alumno_id": "-OKcBcC0M_Ud47rZc4cw",
+      "carrera": "Licenciatura en Informática",
       "estado": "Pendiente",
       "fecha_postulacion": "2025-03-05",
+      "habilidades": "SQL, trabajo en equipo, Git",
       "motivo_rechazo": "",
       "proyecto_id": "-OKcBRmbHC364rSW7t38",
-      "carrera": "Licenciatura en Informática",
-      "habilidades": "SQL, trabajo en equipo, Git",
       "razon_interes": "Busco un proyecto que me permita mejorar mis habilidades en SQL"
+    },
+    "-OKd5QTu3d3LGP1MOC7O": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "carrera": "Sistemas",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-06",
+      "habilidades": "flutter y programacion",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK6j8OqZOASDh3sVlNs",
+      "razon_interes": "me gustaria ganar experienca"
+    },
+    "-OKi3Mo3EiDEpOKR6Hhz": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "carrera": "fffff",
+      "estado": "Aceptada",
+      "fecha_postulacion": "2025-03-07",
+      "habilidades": "fffff",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
+      "razon_interes": "fffff",
+      "url_carta": "/media/cartas/carta_-OKi3Mo3EiDEpOKR6Hhz_RPTElvx.pdf"
     },
     "-Post001": {
       "alumno_id": "-Usr003",
-      "estado": "Cancelada",
+      "carrera": "Ingeniería Industrial",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-15",
+      "habilidades": "Liderazgo, Excel avanzado",
       "motivo_rechazo": "",
       "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
-      "carrera": "Ingeniería Industrial",
-      "habilidades": "Liderazgo, Excel avanzado",
       "razon_interes": "Me gustaría aprender de un entorno profesional y mejorar mi CV"
     },
     "-Post002": {
       "alumno_id": "-Usr003",
-      "estado": "Cancelada",
+      "carrera": "Ingeniería Industrial",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-16",
+      "habilidades": "Manejo de proyectos, comunicación efectiva",
       "motivo_rechazo": "",
       "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
-      "carrera": "Ingeniería Industrial",
-      "habilidades": "Manejo de proyectos, comunicación efectiva",
       "razon_interes": "Busco un proyecto que me permita implementar metodologías de trabajo"
     }
   },
@@ -159,6 +181,20 @@
       "nombre": "Sergio García",
       "rol": "Empresario"
     }
+  },
+  "Notificaciones": {
+    "-Noti001": {
+      "rol": "Empresario",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "fecha": "2025-03-14 10:00:00"
+    },
+    "-Noti002": {
+      "rol": "Alumno",
+      "mensaje": "Tu postulación ha sido aceptada.",
+      "fecha": "2025-03-14 11:00:00"
+    }
+  },
+  "FCMTokens": {
+    "d41d8cd98f00b204e9800998ecf8427e": "TOKEN_EJEMPLO"
   }
 }
-

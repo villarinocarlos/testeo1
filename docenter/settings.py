@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+    'channels', 
     'documentos',
 ]
 
@@ -96,3 +96,14 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Directorio donde se guardarán los archivos subidos
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# URL pública para acceder a esos archivos
+MEDIA_URL = '/media/'
+ 
+ASGI_APPLICATION = 'docenter.asgi.application'

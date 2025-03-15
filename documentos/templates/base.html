@@ -6,26 +6,28 @@
   <title>{% block title %}EduPrácticas{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  
   <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
   <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
 
   <style>
-   
-
-    
     .bg-sidebar {
       background-color: #0A2F58 !important; 
     }
-
-    
     #accordionSidebar {
       background-color: #0A2F58 !important;
     }
-
-    
     .nav-item:hover {
       background-color: #0C3B70 !important; 
+    }
+    
+    .navbar-nav .dropdown-menu a.dropdown-item,
+    .navbar-nav .dropdown-menu a.dropdown-item:visited,
+    .navbar-nav .dropdown-menu a.dropdown-item:focus,
+    .navbar-nav .dropdown-menu a.dropdown-item:hover,
+    .navbar-nav .dropdown-menu a.dropdown-item:active {
+      color: #5a5c69 !important;
+      background-color: #f8f9fc !important;
+      text-decoration: none !important;
     }
   </style>
 
@@ -45,7 +47,6 @@
       </a>
       <hr class="sidebar-divider my-0">
 
-      
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:dashboard' %}">
           <i class="fas fa-home"></i>
@@ -132,8 +133,6 @@
       </div>
     </ul>
     
-
-    
     <div id="content-wrapper" class="d-flex flex-column">
       <div id="content">
         
@@ -141,21 +140,21 @@
           <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
             <i class="fa fa-bars"></i>
           </button>
-
-          
           <div class="d-none d-sm-block ml-auto"></div>
-
           <ul class="navbar-nav">
             
             <li class="nav-item dropdown no-arrow mx-1">
               <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fas fa-bell fa-fw"></i>
-                <span class="badge badge-danger badge-counter">3+</span>
+                <span class="badge badge-danger badge-counter">
+                  {% if notificaciones|length > 0 %}{{ notificaciones|length }}{% else %}0{% endif %}
+                </span>
               </a>
               <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                    aria-labelledby="alertsDropdown">
                 <h6 class="dropdown-header">Alerts Center</h6>
+                {% for notif in notificaciones %}
                 <a class="dropdown-item d-flex align-items-center" href="#">
                   <div class="mr-3">
                     <div class="icon-circle bg-primary">
@@ -163,11 +162,16 @@
                     </div>
                   </div>
                   <div>
-                    <div class="small text-gray-500">Febrero 2025</div>
-                    <span class="font-weight-bold">¡Nueva propuesta de práctica!</span>
+                    
+                    <div class="small text-gray-500">{{ notif.fecha|slice:":10" }}</div>
+                    <span class="font-weight-bold">{{ notif.mensaje }}</span>
                   </div>
                 </a>
-                <a class="dropdown-item text-center small text-gray-500" href="#">Ver todas las alertas</a>
+                {% empty %}
+                <a class="dropdown-item text-center small text-gray-500" href="#">No hay notificaciones</a>
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-center small text-gray-500" href="#" onclick="limpiarNotificaciones(); return false;">Limpiar notificaciones</a>
               </div>
             </li>
             <div class="topbar-divider d-none d-sm-block"></div>
@@ -191,22 +195,117 @@
             </li>
           </ul>
         </nav>
-        
 
         <div class="container-fluid">
           {% block content %}{% endblock %}
         </div>
       </div>
-      
     </div>
-    
   </div>
-  
   
   <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
   <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
   <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+  
+  <script>
+    function limpiarNotificaciones() {
+      fetch("/limpiar_notificaciones/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({})
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Notificaciones limpiadas:", data);
+        location.reload();
+      })
+      .catch(err => console.error("Error al limpiar notificaciones:", err));
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+
+  
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-messaging.js"></script>
+  <script>
+   
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4CvBsyeGZP3qbcv_mK-mRpjmWDB3p3Zk",
+      authDomain: "docenter-7484f.firebaseapp.com",
+      projectId: "docenter-7484f",
+      storageBucket: "docenter-7484f.firebasestorage.app",
+      messagingSenderId: "80541482392",
+      appId: "1:80541482392:web:d2ee5bb92064358425bfed",
+      measurementId: "G-7LCEECJH0C"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+   
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log("Service Worker registrado:", registration);
+          messaging.useServiceWorker(registration);
+          return messaging.requestPermission();
+        })
+        .then(() => {
+          console.log("Permiso de notificaciones concedido.");
+          return messaging.getToken({ 
+            vapidKey: "BO29nHZB0_64-G3ViHrSeDA4JK6adsXdFhM1_q9Fy5khg12z2FX25LCkWfkeyTqJ651X2TJg6XTt3QgnWsza3WQ" 
+          });
+        })
+        .then((token) => {
+          console.log("FCM Token:", token);
+          guardarTokenEnServidor(token);
+        })
+        .catch((err) => {
+          console.error("Error al solicitar permiso de notificaciones:", err);
+        });
+    } else {
+      console.log("El navegador no soporta Service Workers.");
+    }
+
+    function guardarTokenEnServidor(token) {
+      fetch("/guardar_fcm_token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ fcm_token: token })
+      })
+      .then(response => response.json())
+      .then(data => console.log("Token guardado:", data))
+      .catch(err => console.error("Error al guardar el token:", err));
+    }
+
+    messaging.onMessage((payload) => {
+      console.log("Mensaje en foreground:", payload);
+      alert("Notificación: " + payload.notification.title);
+    });
+  </script>
+
   {% block extra_js %}{% endblock %}
 </body>
 </html>
