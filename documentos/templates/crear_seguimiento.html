@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear Seguimiento - EduPrácticas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h1 class="h3 mb-4 text-dark text-center">Crear Seguimiento</h1>
+  
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="postulacion_id">Postulación</label>
+      <select name="postulacion_id" id="postulacion_id" class="form-control" required>
+        <option value="">Seleccione una postulación</option>
+        {% for p in postulaciones %}
+          <option value="{{ p.id }}">{{ p.alumno_correo }} – {{ p.razon_interes|default:"Sin descripción" }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="fecha">Fecha</label>
+      <input type="date" name="fecha" id="fecha" class="form-control" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="avances">Avances</label>
+      <textarea name="avances" id="avances" class="form-control" rows="3"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="observaciones">Observaciones</label>
+      <textarea name="observaciones" id="observaciones" class="form-control" rows="3"></textarea>
+    </div>
+    
+    
+    <div class="form-group">
+      <label for="evidencia">Subir Evidencia</label>
+      <input type="file" name="evidencia" id="evidencia" class="form-control">
+    </div>
+    
+    <button type="submit" class="btn btn-new">Crear Seguimiento</button>
+  </form>
+</div>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+{% endblock %}

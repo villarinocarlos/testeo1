@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Editar Seguimiento - EduPrácticas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h1 class="h3 mb-4 text-dark text-center">Editar Seguimiento</h1>
+  
+  <form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="postulacion_id">Postulación</label>
+      <input type="text" name="postulacion_id" id="postulacion_id" class="form-control"
+             value="{{ seguimiento.postulacion_id }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="fecha">Fecha</label>
+      <input type="date" name="fecha" id="fecha" class="form-control"
+             value="{{ seguimiento.fecha }}" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="avances">Avances</label>
+      <textarea name="avances" id="avances" class="form-control" rows="3">{{ seguimiento.avances }}</textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="observaciones">Observaciones</label>
+      <textarea name="observaciones" id="observaciones" class="form-control" rows="3">{{ seguimiento.observaciones }}</textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-new">Actualizar Seguimiento</button>
+  </form>
+</div>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+{% endblock %}

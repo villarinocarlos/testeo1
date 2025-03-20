@@ -19,6 +19,16 @@
       "telefono": "9812088311"
     }
   },
+  "FCMTokens": {
+    "d41d8cd98f00b204e9800998ecf8427e": "TOKEN_EJEMPLO"
+  },
+  "Notificaciones": {
+    "-Noti001": {
+      "fecha": "2025-03-14 10:00:00",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    }
+  },
   "Postulaciones": {
     "-OKbzrtuXFViF9vQ3g1r": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
@@ -74,7 +84,7 @@
     "-OKi3Mo3EiDEpOKR6Hhz": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
       "carrera": "fffff",
-      "estado": "Aceptada",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-07",
       "habilidades": "fffff",
       "motivo_rechazo": "",
@@ -182,19 +192,25 @@
       "rol": "Empresario"
     }
   },
-  "Notificaciones": {
-    "-Noti001": {
-      "rol": "Empresario",
-      "mensaje": "Un alumno se ha postulado a tu proyecto.",
-      "fecha": "2025-03-14 10:00:00"
+  "Seguimientos": {
+    "-Seg001": {
+      "postulacion_id": "-OKc4ZCk73t-w3BJsvlK",
+      "fecha": "2025-05-10",
+      "avances": "El alumno completó la primera fase del proyecto",
+      "observaciones": "Debe mejorar la documentación",
+      "evidencias": [
+        {
+          "nombre": "captura_tareas.png",
+          "url": "/media/seguimientos/captura_tareas.png"
+        }
+      ]
     },
-    "-Noti002": {
-      "rol": "Alumno",
-      "mensaje": "Tu postulación ha sido aceptada.",
-      "fecha": "2025-03-14 11:00:00"
+    "-Seg002": {
+      "postulacion_id": "-OKi3Mo3EiDEpOKR6Hhz",
+      "fecha": "2025-05-12",
+      "avances": "Se integró la parte de frontend con la API",
+      "observaciones": "Buen trabajo en equipo",
+      "evidencias": []
     }
-  },
-  "FCMTokens": {
-    "d41d8cd98f00b204e9800998ecf8427e": "TOKEN_EJEMPLO"
   }
 }

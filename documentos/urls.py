@@ -31,6 +31,12 @@ urlpatterns = [
     path('postulaciones/editar/<str:postulacion_id>/', views.actualizar_postulacion, name='actualizar_postulacion'),
     path('proyectos/catalogo/', views.catalogo_proyectos, name='catalogo_proyectos'),
     path('postulaciones/generar_carta_local/<str:postulacion_id>/', views.generar_carta_local, name='generar_carta_local'),
-     path("limpiar_notificaciones/", limpiar_notificaciones, name="limpiar_notificaciones"),
+    path("limpiar_notificaciones/", limpiar_notificaciones, name="limpiar_notificaciones"),
+    path("seguimientos/", views.listar_seguimientos, name="crud_seguimientos"),
+    path("seguimientos/crear/", views.crear_seguimiento, name="crear_seguimiento"),
+    path("seguimientos/editar/<str:seguimiento_id>/", views.editar_seguimiento, name="editar_seguimiento"),
+    path("seguimientos/eliminar/<str:seguimiento_id>/", views.eliminar_seguimiento, name="eliminar_seguimiento"),
+    path("mis_seguimientos/", views.dashboard_seguimientos_alumno, name="mis_seguimientos"),
+    path("dashboard_seguimientos/", views.dashboard_seguimientos, name="dashboard_seguimientos"),
 ]
 

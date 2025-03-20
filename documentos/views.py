@@ -816,3 +816,218 @@ def limpiar_notificaciones(request):
                 db.child("Notificaciones").child(key).remove()
         return JsonResponse({"status": "ok"})
     return JsonResponse({"error": "Método no permitido"}, status=405)
+
+
+@admin_o_empresa_required
+def listar_seguimientos(request):
+    """
+    Lista todos los seguimientos en formato de tabla para gestión.
+    Se muestra el correo del alumno (participante) en lugar del ID de postulación.
+    """
+    seguimientos_data = db.child("Seguimientos").get().val() or {}
+    lista_seguimientos = []
+    for key, seg in seguimientos_data.items():
+        seg["id"] = key
+        
+        postulacion = db.child("Postulaciones").child(seg.get("postulacion_id", "")).get().val() or {}
+        alumno = db.child("Usuarios").child(postulacion.get("alumno_id", "")).get().val() or {}
+        seg["alumno_correo"] = alumno.get("correo", "Sin correo")
+        lista_seguimientos.append(seg)
+    
+    paginator = Paginator(lista_seguimientos, 10)
+    page = request.GET.get("page")
+    seguimientos = paginator.get_page(page)
+    return render(request, "crud_seguimientos.html", {"seguimientos": seguimientos})
+
+@admin_o_empresa_required
+def crear_seguimiento(request):
+    """
+    Permite crear un seguimiento nuevo, con opción de subir un archivo (evidencia).
+    Sólo se mostrarán las postulaciones con estado "Aceptada".
+    Para usuarios de tipo Empresa/Empresario se filtran aquellas postulaciones cuyo proyecto pertenezca a su empresa.
+    """
+    if request.method == "POST":
+        postulacion_id = request.POST.get("postulacion_id", "").strip()
+        fecha = request.POST.get("fecha", "").strip()  
+        avances = request.POST.get("avances", "").strip()
+        observaciones = request.POST.get("observaciones", "").strip()
+        
+        
+        evidencias = []
+        if "evidencia" in request.FILES:
+            file_obj = request.FILES["evidencia"]
+            relative_path = "seguimientos/" + file_obj.name
+            saved_path = default_storage.save(relative_path, file_obj)
+            url_archivo = settings.MEDIA_URL + saved_path
+            evidencias.append({"nombre": file_obj.name, "url": url_archivo})
+        
+        if not postulacion_id or not fecha:
+            messages.error(request, "La postulación y la fecha son obligatorias.")
+            return redirect("documentos:crear_seguimiento")
+        
+        nuevo_seg = {
+            "postulacion_id": postulacion_id,
+            "fecha": fecha,
+            "avances": avances,
+            "observaciones": observaciones,
+            "evidencias": evidencias
+        }
+        db.child("Seguimientos").push(nuevo_seg)
+        messages.success(request, "Seguimiento creado correctamente.")
+        return redirect("documentos:crud_seguimientos")
+    
+    
+    postulaciones_data = db.child("Postulaciones").order_by_child("estado").equal_to("Aceptada").get().val() or {}
+    lista_postulaciones = []
+    rol = request.session.get("rol")
+    if rol in ["Empresa", "Empresario"]:
+        correo_usuario = request.session.get("correo")
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val() or {}
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+        else:
+            empresa_id = None
+
+    for key, p in postulaciones_data.items():
+        p["id"] = key
+        
+        alumno = db.child("Usuarios").child(p.get("alumno_id", "")).get().val() or {}
+        p["alumno_correo"] = alumno.get("correo", "Sin correo")
+        
+        if rol in ["Empresa", "Empresario"]:
+            proyecto = db.child("Proyectos").child(p.get("proyecto_id", "")).get().val() or {}
+            if proyecto.get("empresa_id") == empresa_id:
+                lista_postulaciones.append(p)
+        else:
+            
+            lista_postulaciones.append(p)
+    
+    return render(request, "crear_seguimiento.html", {"postulaciones": lista_postulaciones})
+
+
+
+@admin_o_empresa_required
+def editar_seguimiento(request, seguimiento_id):
+    """
+    Permite editar un seguimiento existente.
+    """
+    seg = db.child("Seguimientos").child(seguimiento_id).get().val()
+    if not seg:
+        messages.error(request, "Seguimiento no encontrado.")
+        return redirect("documentos:crud_seguimientos")
+    
+    if request.method == "POST":
+        postulacion_id = request.POST.get("postulacion_id", "").strip()
+        fecha = request.POST.get("fecha", "").strip()
+        avances = request.POST.get("avances", "").strip()
+        observaciones = request.POST.get("observaciones", "").strip()
+        updates = {
+            "postulacion_id": postulacion_id,
+            "fecha": fecha,
+            "avances": avances,
+            "observaciones": observaciones
+        }
+        db.child("Seguimientos").child(seguimiento_id).update(updates)
+        messages.success(request, "Seguimiento actualizado correctamente.")
+        return redirect("documentos:crud_seguimientos")
+    
+    return render(request, "editar_seguimiento.html", {"seguimiento": seg, "seguimiento_id": seguimiento_id})
+
+
+@admin_o_empresa_required
+def eliminar_seguimiento(request, seguimiento_id):
+    """
+    Permite eliminar un seguimiento.
+    """
+    seg = db.child("Seguimientos").child(seguimiento_id).get().val()
+    if not seg:
+        messages.error(request, "Seguimiento no encontrado.")
+        return redirect("documentos:crud_seguimientos")
+    db.child("Seguimientos").child(seguimiento_id).remove()
+    messages.success(request, "Seguimiento eliminado correctamente.")
+    return redirect("documentos:crud_seguimientos")
+
+
+
+
+@alumno_required
+def dashboard_seguimientos_alumno(request):
+    correo = request.session.get("correo")
+    alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo).get().val() or {}
+    if not alumno_data:
+        messages.error(request, "No se encontró tu perfil de alumno.")
+        return redirect("documentos:dashboard")
+    alumno_key = list(alumno_data.keys())[0]
+    
+    
+    postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
+    postulacion_ids = set(postulaciones_data.keys())
+    
+ 
+    seguimientos_data = db.child("Seguimientos").get().val() or {}
+    timeline = []
+    for key, seg in seguimientos_data.items():
+        if seg.get("postulacion_id") in postulacion_ids:
+            seg["id"] = key
+            
+            postulacion = db.child("Postulaciones").child(seg.get("postulacion_id")).get().val() or {}
+            proyecto = db.child("Proyectos").child(postulacion.get("proyecto_id", "")).get().val() or {}
+            empresa = db.child("Empresas").child(proyecto.get("empresa_id", "")).get().val() or {}
+            seg["empresa_nombre"] = empresa.get("nombre", "Empresa desconocida")
+            timeline.append(seg)
+    
+    timeline.sort(key=lambda s: s.get("fecha", ""))
+    
+    return render(request, "seguimientos_alumno.html", {"seguimientos": timeline})
+
+
+@admin_o_empresa_required
+def dashboard_seguimientos(request):
+    
+    seguimientos_data = db.child("Seguimientos").get().val() or {}
+    timeline = []
+    for key, seg in seguimientos_data.items():
+        seg["id"] = key
+        timeline.append(seg)
+    
+    timeline.sort(key=lambda s: s.get("fecha", ""))
+    return render(request, "dashboard_seguimientos.html", {"seguimientos": timeline})
+
+@admin_o_empresa_required
+def dashboard_seguimientos(request):
+    
+    correo_usuario = request.session.get("correo")
+    
+    empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val() or {}
+    if not empresa_data:
+        messages.error(request, "No se encontró tu empresa asociada.")
+        return redirect('documentos:dashboard')
+    empresa_id = list(empresa_data.keys())[0]
+
+    
+    proyectos_data = db.child("Proyectos").order_by_child("empresa_id").equal_to(empresa_id).get().val() or {}
+    proyectos_ids = set(proyectos_data.keys())
+
+    
+    seguimientos_data = db.child("Seguimientos").get().val() or {}
+    timeline = []
+    for key, seg in seguimientos_data.items():
+        seg["id"] = key
+        postulacion_id = seg.get("postulacion_id", "")
+        postulacion = db.child("Postulaciones").child(postulacion_id).get().val() or {}
+       
+        if postulacion.get("proyecto_id") not in proyectos_ids:
+            continue
+        
+        alumno_id = postulacion.get("alumno_id", "")
+        alumno = db.child("Usuarios").child(alumno_id).get().val() or {}
+        seg["alumno_correo"] = alumno.get("correo", "Sin correo")
+        
+        proyecto_id = postulacion.get("proyecto_id", "")
+        proyecto = db.child("Proyectos").child(proyecto_id).get().val() or {}
+        seg["proyecto_titulo"] = proyecto.get("titulo", "Proyecto desconocido")
+        timeline.append(seg)
+    
+    
+    timeline.sort(key=lambda s: s.get("fecha", ""), reverse=True)
+    return render(request, "dashboard_seguimientos.html", {"seguimientos": timeline})

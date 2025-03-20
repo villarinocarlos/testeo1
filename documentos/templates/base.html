@@ -6,6 +6,7 @@
   <title>{% block title %}EduPrácticas{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+  <!-- Hojas de estilo -->
   <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
   <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
 
@@ -19,7 +20,7 @@
     .nav-item:hover {
       background-color: #0C3B70 !important; 
     }
-    
+    /* Forzar color en el dropdown de notificaciones */
     .navbar-nav .dropdown-menu a.dropdown-item,
     .navbar-nav .dropdown-menu a.dropdown-item:visited,
     .navbar-nav .dropdown-menu a.dropdown-item:focus,
@@ -29,16 +30,22 @@
       background-color: #f8f9fc !important;
       text-decoration: none !important;
     }
+    /* Aseguramos que el texto en el topbar (p. ej., Rol) no se vuelva azul */
+    .navbar-nav .nav-item .nav-link span.text-gray-600,
+    .navbar-nav .nav-item .nav-link span.text-gray-600:hover,
+    .navbar-nav .nav-item .nav-link span.text-gray-600:focus,
+    .navbar-nav .nav-item .nav-link span.text-gray-600:active {
+      color: #5a5c69 !important;
+      text-decoration: none !important;
+    }
   </style>
 
   {% block extra_css %}{% endblock %}
 </head>
 <body id="page-top">
-  
   <div id="wrapper">
-    
+    <!-- Sidebar -->
     <ul class="navbar-nav bg-sidebar sidebar sidebar-dark accordion" id="accordionSidebar">
-      
       <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'documentos:dashboard' %}">
         <div class="sidebar-brand-icon rotate-n-15">
           <i class="fas fa-laugh-wink"></i>
@@ -47,36 +54,35 @@
       </a>
       <hr class="sidebar-divider my-0">
 
+      <!-- Dashboard -->
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:dashboard' %}">
           <i class="fas fa-home"></i>
           <span>Dashboard</span>
         </a>
       </li>
+
+      <!-- Empresas (solo para no alumnos) -->
+      {% if request.session.rol != "Alumno" %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:crud_empresas' %}">
           <i class="fas fa-building"></i>
           <span>Empresas</span>
         </a>
       </li>
+      {% endif %}
+
+      <!-- Usuarios (solo para Admin) -->
+      {% if request.session.rol == "Admin" %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:crud_usuarios' %}">
           <i class="fas fa-users"></i>
           <span>Usuarios</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'documentos:crud_proyectos' %}">
-          <i class="fas fa-file-alt"></i>
-          <span>Proyectos</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'documentos:crud_postulaciones' %}">
-          <i class="fas fa-file-alt"></i>
-          <span>Postulaciones</span>
-        </a>
-      </li>
+      {% endif %}
+
+      <!-- Proyectos: Alumno ve catálogo; otros ven CRUD -->
       {% if request.session.rol == "Alumno" %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:catalogo_proyectos' %}">
@@ -84,25 +90,65 @@
           <span>Proyectos Disponibles</span>
         </a>
       </li>
+      {% else %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_proyectos' %}">
+          <i class="fas fa-file-alt"></i>
+          <span>Proyectos</span>
+        </a>
+      </li>
       {% endif %}
+
+      <!-- Postulaciones: Alumno vs. otros -->
+      {% if request.session.rol == "Alumno" %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:mis_postulaciones' %}">
           <i class="fas fa-file-alt"></i>
           <span>Mis Postulaciones</span>
         </a>
       </li>
+      {% else %}
       <li class="nav-item">
-        <a class="nav-link" href="#">
-          <i class="fas fa-tools"></i>
+        <a class="nav-link" href="{% url 'documentos:crud_postulaciones' %}">
+          <i class="fas fa-file-alt"></i>
+          <span>Postulaciones</span>
+        </a>
+      </li>
+      {% endif %}
+
+      <!-- Seguimiento de Prácticas -->
+      {% if request.session.rol == "Alumno" %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:mis_seguimientos' %}">
+          <i class="fas fa-tasks"></i>
+          <span>Mis Seguimientos</span>
+        </a>
+      </li>
+      {% elif request.session.rol in "Admin Empresa Empresario" %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:crud_seguimientos' %}">
+          <i class="fas fa-tasks"></i>
           <span>Seguimiento de Prácticas</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:dashboard_seguimientos' %}">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard Seguimientos</span>
+        </a>
+      </li>
+      {% endif %}
+
+      <!-- Reportes -->
       <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="fas fa-chart-bar"></i>
           <span>Reportes</span>
         </a>
       </li>
+
+      <!-- Administración, Documentos, Logs (solo Admin) -->
+      {% if request.session.rol == "Admin" %}
       <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="fas fa-cogs"></i>
@@ -121,28 +167,33 @@
           <span>Logs</span>
         </a>
       </li>
+      {% endif %}
+
+      <!-- Logout (para todos) -->
       <li class="nav-item">
         <a class="nav-link" href="{% url 'documentos:logout' %}">
           <i class="fas fa-sign-out-alt"></i>
           <span>Logout</span>
         </a>
       </li>
-      
+
       <div class="text-center d-none d-md-inline">
         <button class="rounded-circle border-0" id="sidebarToggle"></button>
       </div>
     </ul>
-    
+    <!-- Fin Sidebar -->
+
+    <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
       <div id="content">
-        
+        <!-- Topbar -->
         <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
           <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
             <i class="fa fa-bars"></i>
           </button>
           <div class="d-none d-sm-block ml-auto"></div>
           <ul class="navbar-nav">
-            
+            <!-- Dropdown de Notificaciones -->
             <li class="nav-item dropdown no-arrow mx-1">
               <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -162,28 +213,30 @@
                     </div>
                   </div>
                   <div>
-                    
                     <div class="small text-gray-500">{{ notif.fecha|slice:":10" }}</div>
                     <span class="font-weight-bold">{{ notif.mensaje }}</span>
                   </div>
                 </a>
                 {% empty %}
-                <a class="dropdown-item text-center small text-gray-500" href="#">No hay notificaciones</a>
+                <a class="dropdown-item text-center small text-gray-500" href="#">
+                  No hay notificaciones
+                </a>
                 {% endfor %}
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item text-center small text-gray-500" href="#" onclick="limpiarNotificaciones(); return false;">Limpiar notificaciones</a>
+                <a class="dropdown-item text-center small text-gray-500" href="#" onclick="limpiarNotificaciones(); return false;">
+                  Limpiar notificaciones
+                </a>
               </div>
             </li>
             <div class="topbar-divider d-none d-sm-block"></div>
-            
+            <!-- Dropdown de Usuario -->
             <li class="nav-item dropdown no-arrow">
               <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                   Rol: {{ request.session.rol|default:"Docente" }}
                 </span>
-                <img class="img-profile rounded-circle"
-                     src="{% static 'img/undraw_profile.svg' %}">
+                <img class="img-profile rounded-circle" src="{% static 'img/undraw_profile.svg' %}">
               </a>
               <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                    aria-labelledby="userDropdown">
@@ -195,20 +248,24 @@
             </li>
           </ul>
         </nav>
+        <!-- Fin Topbar -->
 
+        <!-- Contenido Principal -->
         <div class="container-fluid">
           {% block content %}{% endblock %}
         </div>
       </div>
     </div>
+    <!-- Fin Content Wrapper -->
   </div>
   
+  <!-- Scripts -->
   <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
   <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
   <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
 
-  
+  <!-- Función para limpiar notificaciones vía AJAX -->
   <script>
     function limpiarNotificaciones() {
       fetch("/limpiar_notificaciones/", {
@@ -243,11 +300,10 @@
     }
   </script>
 
-  
+  <!-- Firebase Cloud Messaging Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-messaging.js"></script>
   <script>
-   
     const firebaseConfig = {
       apiKey: "AIzaSyA4CvBsyeGZP3qbcv_mK-mRpjmWDB3p3Zk",
       authDomain: "docenter-7484f.firebaseapp.com",
@@ -261,7 +317,6 @@
     firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
 
-   
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {

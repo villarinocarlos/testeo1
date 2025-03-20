@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard de Seguimientos - EduPrácticas{% endblock %}
+
+{% block extra_css %}
+<style>
+  .timeline {
+    position: relative;
+    padding: 30px 0;
+    margin-top: 20px;
+  }
+  .timeline:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 60px;
+    width: 4px;
+    background: #0A2F58;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    padding-left: 90px;
+  }
+  .timeline-item:before {
+    content: '';
+    position: absolute;
+    left: 40px;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0A2F58;
+  }
+  .timeline-date {
+    font-weight: bold;
+    color: #0A2F58;
+    margin-bottom: 10px;
+  }
+  .timeline-content {
+    background: #f8f9fc;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+  .timeline-content h5 {
+    margin-bottom: 10px;
+  }
+  .timeline-content p {
+    margin-bottom: 5px;
+  }
+  .timeline-content ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+  }
+  .timeline-content ul li {
+    list-style: disc;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h1 class="h3 text-dark text-center mb-4">Dashboard de Seguimientos</h1>
+  <div class="timeline">
+    {% for seg in seguimientos %}
+      <div class="timeline-item">
+        <div class="timeline-date">{{ seg.fecha|slice:":10" }}</div>
+        <div class="timeline-content">
+          <h5>Alumno: {{ seg.alumno_correo }}</h5>
+          <p><strong>Proyecto:</strong> {{ seg.proyecto_titulo }}</p>
+          <p><strong>Avances:</strong> {{ seg.avances }}</p>
+          <p><strong>Observaciones:</strong> {{ seg.observaciones }}</p>
+          {% if seg.evidencias %}
+            <p><strong>Evidencias:</strong></p>
+            <ul>
+              {% for e in seg.evidencias %}
+                <li><a href="{{ e.url }}" target="_blank">{{ e.nombre }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-center">
+        <p>No hay seguimientos registrados para tus proyectos.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

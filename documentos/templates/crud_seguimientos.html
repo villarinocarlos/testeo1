@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Gestión de Seguimientos - EduPrácticas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="text-center mb-3">
+    <h1 class="h3 text-dark">Gestión de Seguimientos</h1>
+  </div>
+  
+  <div class="text-center mb-4">
+    <a href="{% url 'documentos:crear_seguimiento' %}" class="btn btn-new">Crear Seguimiento</a>
+    <a href="{% url 'documentos:mis_seguimientos' %}" class="btn btn-secondary">Dashboard Alumno</a>
+  </div>
+
+  <div class="table-responsive" style="overflow-x:auto;">
+    <table class="table table-bordered" id="seguimientosTable" style="color: #000; min-width: 900px;">
+      <thead style="background: #0A2F58; color: #fff;">
+        <tr>
+          <th>Alumno</th>
+          <th>Fecha</th>
+          <th>Avances</th>
+          <th>Observaciones</th>
+          <th>Evidencias</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody style="background-color: #fff;">
+        {% for seg in seguimientos %}
+        <tr>
+          <td>{{ seg.alumno_correo }}</td>
+          <td>{{ seg.fecha }}</td>
+          <td>{{ seg.avances }}</td>
+          <td>{{ seg.observaciones }}</td>
+          <td>
+            {% if seg.evidencias %}
+              <ul>
+                {% for e in seg.evidencias %}
+                  <li><a href="{{ e.url }}" target="_blank">{{ e.nombre }}</a></li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'documentos:editar_seguimiento' seg.id %}" class="btn btn-warning btn-sm">Editar</a>
+            <button class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ seg.id }}')">Eliminar</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center">No hay seguimientos registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  {% if seguimientos.has_other_pages %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      {% if seguimientos.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ seguimientos.previous_page_number }}">Anterior</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">Anterior</a>
+        </li>
+      {% endif %}
+      {% for num in seguimientos.paginator.page_range %}
+        {% if seguimientos.number == num %}
+          <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if seguimientos.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ seguimientos.next_page_number }}">Siguiente</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function confirmarEliminacion(segId) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = `/seguimientos/eliminar/${segId}/`;
+      }
+    });
+  }
+</script>
+
+<style>
+  .btn-new {
+    background-color: #0A2F58;
+    border-color: #0A2F58;
+    color: white;
+  }
+  .btn-new:hover {
+    background-color: #082240;
+    border-color: #082240;
+    color: white;
+  }
+</style>
+{% endblock %}
