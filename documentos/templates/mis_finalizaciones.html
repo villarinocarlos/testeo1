@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Mis Cartas de Finalización - EduPrácticas{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card-finalizacion {
+    background: #f8f9fc;
+    border: 1px solid #d1d3e2;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-finalizacion h5 {
+    color: #0A2F58;
+    margin-bottom: 10px;
+  }
+  .card-finalizacion p {
+    margin-bottom: 5px;
+  }
+  .btn-download {
+    background-color: #0A2F58;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+  }
+  .btn-download:hover {
+    background-color: #082240;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="text-center mb-4">
+    <h1 class="h3 text-dark">Mis Cartas de Finalización</h1>
+  </div>
+  
+  {% if finalizaciones %}
+    {% for fin in finalizaciones %}
+      <div class="card-finalizacion">
+        <h5>Proyecto: {{ fin.proyecto_titulo }}</h5>
+        <p><strong>Fecha de Postulación:</strong> {{ fin.fecha_postulacion }}</p>
+        <p><strong>Estado:</strong> {{ fin.estado }}</p>
+        <p>
+          <a href="{{ fin.url_carta_finalizacion }}" target="_blank" class="btn-download">
+            Descargar Carta de Finalización
+          </a>
+        </p>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="text-center">
+      <p>No tienes cartas de finalización generadas.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

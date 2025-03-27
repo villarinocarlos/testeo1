@@ -165,6 +165,7 @@ def crear_usuario(request):
             datos["telefono"] = telefono
 
         db.child("Usuarios").push(datos)
+        log_event("Creación de usuario", request.session.get("correo"), f"Usuario {correo} creado con rol {rol}")
         messages.success(request, "Usuario creado exitosamente.")
         return redirect('documentos:crud_usuarios')
 
@@ -218,6 +219,7 @@ def editar_usuario(request, user_id):
             updates["telefono"] = None
 
         db.child("Usuarios").child(user_id).update(updates)
+        log_event("Edición de usuario", request.session.get("correo"), f"Usuario {user_id} actualizado")
         messages.success(request, "Usuario actualizado exitosamente.")
         return redirect('documentos:crud_usuarios')
 
@@ -232,6 +234,7 @@ def editar_usuario(request, user_id):
 @admin_required
 def eliminar_usuario(request, user_id):
     db.child("Usuarios").child(user_id).remove()
+    log_event("Eliminación de usuario", request.session.get("correo"), f"Usuario {user_id} eliminado")
     messages.success(request, "Usuario eliminado.")
     return redirect('documentos:crud_usuarios')
 
@@ -273,8 +276,10 @@ def crear_empresa(request):
         }
 
         db.child("Empresas").push(nueva_empresa)
+        log_event("Creación de empresa", request.session.get("correo"), f"Empresa {nombre} creada")
         messages.success(request, "Empresa creada exitosamente.")
-        return redirect("documentos:crud_empresas")  
+        return redirect("documentos:crud_empresas")
+
 
     return render(request, "crear_empresa.html")
 
@@ -300,6 +305,7 @@ def editar_empresa(request, empresa_id):
                 "correo": correo,
                 "telefono": telefono
             })
+            log_event("Edición de empresa", request.session.get("correo"), f"Empresa {empresa_id} actualizada")
             messages.success(request, "Empresa actualizada correctamente.")
         except Exception as e:
             messages.error(request, f"Error al actualizar empresa: {str(e)}")
@@ -315,11 +321,12 @@ def editar_empresa(request, empresa_id):
         return render(request, "editar_empresa.html", {"empresa": empresa_data, "empresa_id": empresa_id})
     
 
+
 def eliminar_empresa(request, empresa_id):
     db.child("Empresas").child(empresa_id).remove()
+    log_event("Eliminación de empresa", request.session.get("correo"), f"Empresa {empresa_id} eliminada")
     messages.success(request, "Empresa eliminada correctamente.")
     return redirect('documentos:crud_empresas')
-
 
 
 def admin_required(view_func):
@@ -440,6 +447,7 @@ def crear_proyecto(request):
             "estado": "Abierto"
         }
         db.child("Proyectos").push(nuevo_proyecto)
+        log_event("Creación de proyecto", request.session.get("correo"), f"Proyecto '{titulo}' creado")
         messages.success(request, "Proyecto creado exitosamente.")
         return redirect('documentos:crud_proyectos')
     else:
@@ -520,6 +528,7 @@ def editar_proyecto(request, proyecto_id):
             "empresa_id": empresa_id,
         }
         db.child("Proyectos").child(proyecto_id).update(updates)
+        log_event("Edición de proyecto", request.session.get("correo"), f"Proyecto {proyecto_id} actualizado")
         messages.success(request, "Proyecto actualizado correctamente.")
         return redirect('documentos:crud_proyectos')
     else:
@@ -551,6 +560,7 @@ def eliminar_proyecto(request, proyecto_id):
             messages.error(request, "No se encontró tu empresa asociada.")
             return redirect('documentos:crud_proyectos')
     db.child("Proyectos").child(proyecto_id).remove()
+    log_event("Eliminación de proyecto", request.session.get("correo"), f"Proyecto {proyecto_id} eliminado")
     messages.success(request, "Proyecto eliminado correctamente.")
     return redirect('documentos:crud_proyectos')
 
@@ -589,6 +599,7 @@ def crear_postulacion(request, proyecto_id):
             "razon_interes": razon_interes
         }
         db.child("Postulaciones").push(nueva_postulacion)
+        log_event("Creación de postulación", request.session.get("correo"), f"Postulación creada para proyecto {proyecto_id}")
         messages.success(request, "Te has postulado correctamente.")
 
         # Guardar notificación para el empresario:
@@ -626,19 +637,23 @@ def mis_postulaciones(request):
 
     lista_postulaciones = []
     for key, val in postulaciones_data.items():
-        # Mostrar solo postulaciones activas (Pendiente y Aceptada)
-        if val.get("estado") not in ["Pendiente", "Aceptada"]:
+        # Convertir a minúsculas para la comparación
+        estado = val.get("estado", "").strip().lower()
+        # Ahora se incluye "pendiente", "aceptada" y "finalizada" (sin importar mayúsculas)
+        if estado not in ["pendiente", "aceptada", "finalizada"]:
             continue
+        # Normalizamos el campo de estado para que el template lo reciba en formato Title Case
+        val["estado"] = estado.capitalize()  # Ejemplo: "Finalizada"
         val["id"] = key
         
-        # Obtener título del proyecto
+        # Obtener el título del proyecto
         proyecto_info = db.child("Proyectos").child(val.get("proyecto_id")).get().val() or {}
         val["proyecto_titulo"] = proyecto_info.get("titulo", "Proyecto desconocido")
         
         # Obtener datos del alumno (correo y matrícula)
         alumno_info = db.child("Usuarios").child(alumno_key).get().val() or {}
         val["alumno_correo"] = alumno_info.get("correo", "")
-        val["matricula"] = alumno_info.get("matricula", "")  # Asegúrate de que en la base de datos se guarde este campo
+        val["matricula"] = alumno_info.get("matricula", "")
         
         lista_postulaciones.append(val)
 
@@ -679,6 +694,9 @@ def listar_postulaciones(request):
     return render(request, 'crud_postulaciones.html', {
         "postulaciones": lista_post
     })
+
+
+@admin_o_empresa_required
 @admin_o_empresa_required
 def actualizar_postulacion(request, postulacion_id):
     post_data = db.child("Postulaciones").child(postulacion_id).get().val()
@@ -687,16 +705,28 @@ def actualizar_postulacion(request, postulacion_id):
         return redirect('documentos:crud_postulaciones')
     
     if request.method == "POST":
-        nuevo_estado = request.POST.get('estado', '')
+        # Obtener y normalizar el estado del formulario
+        nuevo_estado = request.POST.get('estado', '').strip().capitalize()
         nuevo_motivo = request.POST.get('motivo_rechazo', '').strip()
-
-        updates = {
-            "estado": nuevo_estado,
-            "motivo_rechazo": nuevo_motivo if nuevo_estado == "Rechazada" else ""
-        }
-        db.child("Postulaciones").child(postulacion_id).update(updates)
+        print("Nuevo estado recibido:", nuevo_estado)  # Para depuración
         
-        # Si el estado se actualiza a "Aceptada" o "Rechazada", notificar al alumno
+        # Si se selecciona "Finalizada", ignoramos el motivo de rechazo
+        if nuevo_estado == "Finalizada":
+            updates = {
+                "estado": "Finalizada",
+                "motivo_rechazo": ""
+            }
+        else:
+            updates = {
+                "estado": nuevo_estado,
+                "motivo_rechazo": nuevo_motivo if nuevo_estado == "Rechazada" else ""
+            }
+        
+        db.child("Postulaciones").child(postulacion_id).update(updates)
+        log_event("Actualización de postulación", request.session.get("correo"), f"Postulación {postulacion_id} actualizada a {nuevo_estado}")
+
+        
+        # Notificar para estados Aceptada y Rechazada
         if nuevo_estado in ["Aceptada", "Rechazada"]:
             alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
             if alumno:
@@ -709,15 +739,41 @@ def actualizar_postulacion(request, postulacion_id):
                     }
                     db.child("Notificaciones").push(notificacion)
         
+        # Si se actualiza a "Finalizada", generar la carta de finalización
+        if nuevo_estado == "Finalizada":
+            alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
+            proyecto = db.child("Proyectos").child(post_data["proyecto_id"]).get().val()
+            empresa = db.child("Empresas").child(proyecto["empresa_id"]).get().val()
+            
+            extra_context = {
+                "current_date": datetime.now().strftime("%Y-%m-%d"),
+                "current_year": datetime.now().year
+            }
+            # Genera el PDF usando el template "carta_finalizacion.html"
+            pdf_path = generar_pdf_xhtml2pdf(alumno, proyecto, empresa, 
+                                             template_name="carta_finalizacion.html", 
+                                             extra_context=extra_context)
+            if pdf_path is None:
+                messages.error(request, "Ocurrió un error al generar la carta de finalización.")
+            else:
+                relative_path = f"cartas/carta_finalizacion_{postulacion_id}.pdf"
+                full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                with open(pdf_path, "rb") as f:
+                    file_content = File(f)
+                    saved_path = default_storage.save(relative_path, file_content)
+                url_pdf = settings.MEDIA_URL + saved_path
+                db.child("Postulaciones").child(postulacion_id).update({"url_carta_finalizacion": url_pdf})
+        
         messages.success(request, "La postulación se ha actualizado correctamente.")
         return redirect('documentos:crud_postulaciones')
     else:
+        # Usamos el template existente de edición, ya que "detalle_postulacion.html" no existe.
         return render(request, "editar_postulacion.html", {
             "postulacion": post_data,
             "postulacion_id": postulacion_id
         })
-
-
+    
 @alumno_required
 def cancelar_postulacion(request, postulacion_id):
     """
@@ -739,33 +795,50 @@ def cancelar_postulacion(request, postulacion_id):
     if post_data.get("alumno_id") != alumno_key:
         return redirect('documentos:mis_postulaciones')
 
-   
     if post_data.get("estado") == "Pendiente":
         db.child("Postulaciones").child(postulacion_id).update({"estado": "Cancelada"})
+        log_event("Cancelación de postulación", request.session.get("correo"), f"Postulación {postulacion_id} cancelada")
         messages.success(request, "Has cancelado tu postulación.")
     else:
         messages.error(request, "No puedes cancelar esta postulación, ya ha sido revisada.")
-
+    
     return redirect('documentos:mis_postulaciones')
 
+    
+@alumno_required
 @alumno_required
 def catalogo_proyectos(request):
+    # Primero obtenemos el perfil del alumno a partir de su correo en la sesión
+    correo_alumno = request.session.get("correo")
+    alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
+    if not alumno_data:
+        messages.error(request, "No se encontró tu perfil de alumno.")
+        return redirect("documentos:dashboard")
+    alumno_key = list(alumno_data.keys())[0]
+
+    # Consultamos todas las postulaciones del alumno
+    postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
+    for key, post in postulaciones_data.items():
+        # Si tiene una postulación en estado Pendiente o Aceptada, redirigimos
+        if post.get("estado") in ["Pendiente", "Aceptada"]:
+            messages.error(request, "Ya estás en un proyecto y no puedes ver proyectos disponibles.")
+            return redirect("documentos:dashboard")
     
+    # Si no tiene ninguna, mostramos los proyectos abiertos
     proyectos_data = db.child("Proyectos").order_by_child("estado").equal_to("Abierto").get().val() or {}
     proyectos_list = []
     for key, proyecto in proyectos_data.items():
         proyecto["id"] = key
-        
         empresa = db.child("Empresas").child(proyecto.get("empresa_id")).get().val() or {}
         proyecto["empresa_nombre"] = empresa.get("nombre", "Empresa desconocida")
         proyectos_list.append(proyecto)
-    
     
     paginator = Paginator(proyectos_list, 10)
     page = request.GET.get("page")
     proyectos = paginator.get_page(page)
     
     return render(request, "catalogo_proyectos.html", {"proyectos": proyectos})
+
 def generar_carta_local(request, postulacion_id):
     """
     Genera la carta en PDF a partir de los datos del alumno, proyecto y empresa,
@@ -1031,3 +1104,122 @@ def dashboard_seguimientos(request):
     
     timeline.sort(key=lambda s: s.get("fecha", ""), reverse=True)
     return render(request, "dashboard_seguimientos.html", {"seguimientos": timeline})
+
+
+def generar_carta_finalizacion(request, postulacion_id):
+    """
+    Genera la carta de finalización en PDF a partir de los datos del alumno,
+    proyecto y empresa, usando el template 'carta_finalizacion.html'.
+    El PDF se guarda localmente (en MEDIA_ROOT) y se actualiza la postulación con la URL.
+    """
+    # Obtener la postulación desde Firebase
+    post_data = db.child("Postulaciones").child(postulacion_id).get().val()
+    if not post_data:
+        messages.error(request, "Postulación no encontrada.")
+        return redirect('documentos:crud_postulaciones')
+    
+    # Obtener datos del alumno, proyecto y empresa
+    alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
+    proyecto = db.child("Proyectos").child(post_data["proyecto_id"]).get().val()
+    empresa = db.child("Empresas").child(proyecto["empresa_id"]).get().val()
+
+    # Preparar datos adicionales para la carta
+    data_extra = {
+        "current_date": datetime.now().strftime("%Y-%m-%d"),
+        "current_year": datetime.now().year,
+    }
+    
+    # Generar el PDF usando el template 'carta_finalizacion.html'
+    # La función generar_pdf_xhtml2pdf debe estar preparada para recibir el nombre del template
+    pdf_path = generar_pdf_xhtml2pdf(alumno, proyecto, empresa, template_name="carta_finalizacion.html", extra_context=data_extra)
+    
+    # Definir la ruta relativa dentro de MEDIA_ROOT para guardar el PDF
+    relative_path = f"cartas/carta_finalizacion_{postulacion_id}.pdf"
+    full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+    
+    # Crear el directorio si no existe
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
+    
+    # Guardar el PDF en el almacenamiento local
+    with open(pdf_path, "rb") as f:
+        file_content = File(f)
+        saved_path = default_storage.save(relative_path, file_content)
+    
+    # Construir la URL pública (asumiendo que MEDIA_URL está configurado en settings)
+    url_pdf = settings.MEDIA_URL + saved_path
+
+    # Actualizar la postulación con la URL del PDF generado
+    db.child("Postulaciones").child(postulacion_id).update({"url_carta_finalizacion": url_pdf})
+    
+    messages.success(request, "La carta de finalización se ha generado y está disponible para descarga.")
+    return redirect('documentos:crud_postulaciones')
+
+@alumno_required
+def mis_finalizaciones(request):
+    """
+    Vista para que el alumno vea las cartas de finalización generadas para sus postulaciones.
+    Se mostrarán aquellas postulaciones que tengan el estado "Finalizada" y contengan la URL de la carta.
+    """
+    if 'correo' not in request.session:
+        messages.error(request, "Debes iniciar sesión.")
+        return redirect('documentos:login')
+
+    correo_alumno = request.session.get('correo')
+    alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
+    if not alumno_data:
+        messages.error(request, "No se encontró tu perfil de alumno.")
+        return redirect('documentos:login')
+
+    alumno_key = list(alumno_data.keys())[0]
+    postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
+
+    finalizaciones = []
+    for key, val in postulaciones_data.items():
+        estado = val.get("estado", "").strip().lower()
+        # Se consideran finalizadas aquellas postulaciones con estado "finalizada"
+        # Y que tengan definida la URL de la carta
+        if estado == "finalizada" and val.get("url_carta_finalizacion"):
+            val["id"] = key
+            # Opcionalmente, puedes obtener más datos, por ejemplo el título del proyecto
+            proyecto_info = db.child("Proyectos").child(val.get("proyecto_id")).get().val() or {}
+            val["proyecto_titulo"] = proyecto_info.get("titulo", "Proyecto desconocido")
+            finalizaciones.append(val)
+
+    # Ordenar por fecha de postulación (más reciente primero)
+    finalizaciones.sort(key=lambda s: s.get("fecha_postulacion", ""), reverse=True)
+    
+    return render(request, "mis_finalizaciones.html", {
+        "finalizaciones": finalizaciones
+    }) 
+
+def log_event(action, user, details):
+    """
+    Registra un evento en el nodo 'Logs' de Firebase.
+    
+    :param action: Una cadena que describe la acción (e.g., "Creación de empresa")
+    :param user: El correo o identificador del usuario que realiza la acción.
+    :param details: Detalles adicionales sobre la acción.
+    """
+    log_data = {
+        "action": action,
+        "user": user,
+        "details": details,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    db.child("Logs").push(log_data)
+
+@admin_required
+def ver_logs(request):
+    # Obtener todos los logs desde Firebase
+    logs_data = db.child("Logs").get().val() or {}
+    logs_list = []
+    for key, log in logs_data.items():
+        log["id"] = key
+        logs_list.append(log)
+    # Ordenar los logs por timestamp en orden descendente
+    logs_list = sorted(logs_list, key=lambda x: x["timestamp"], reverse=True)
+    # Paginación: 10 logs por página
+    paginator = Paginator(logs_list, 10)
+    page = request.GET.get('page')
+    paginated_logs = paginator.get_page(page)
+    return render(request, "logs_admin.html", {"logs": paginated_logs})

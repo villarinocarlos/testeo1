@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Mis Postulaciones{% endblock %}
+
+{% block title %}Mis Postulaciones - EduPrácticas{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
   <div class="text-center mb-3">
     <h1 class="h3 text-dark">Mis Postulaciones</h1>
   </div>
-
+  
   <div class="table-responsive">
     <table class="table table-bordered" style="min-width: 800px; color: #000;">
       <thead style="background: #0A2F58; color: #fff;">
         <tr>
           <th>Proyecto</th>
-          <th>Matrícula</th>
+          <th>Correo Alumno</th>
           <th>Fecha de Postulación</th>
           <th>Estado</th>
-          <th>Motivo de Rechazo</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -24,27 +24,30 @@
         {% for post in postulaciones %}
         <tr>
           <td>{{ post.proyecto_titulo }}</td>
-          <td>{{ post.matricula|default:"-" }}</td>
+          <td>{{ post.alumno_correo }}</td>
           <td>{{ post.fecha_postulacion }}</td>
           <td>{{ post.estado }}</td>
-          <td>{{ post.motivo_rechazo|default:"-" }}</td>
           <td>
             {% if post.estado == "Pendiente" %}
               <button class="btn btn-danger btn-sm" onclick="confirmarCancelacion('{{ post.id }}')">
                 Cancelar
               </button>
-            {% elif post.estado == "Aceptada" and post.url_carta %}
-              <a href="{{ post.url_carta }}" target="_blank" class="btn btn-info btn-sm">Descargar Carta de Aceptación</a>
-            {% elif post.estado == "Cancelada" %}
-              <small class="text-muted">Postulación cancelada</small>
+            {% elif post.estado == "Finalizada" %}
+              {% if post.url_carta_finalizacion %}
+                <a href="{{ post.url_carta_finalizacion }}" target="_blank" class="btn btn-success btn-sm">
+                  Descargar Carta
+                </a>
+              {% else %}
+                <span class="text-muted">Carta pendiente</span>
+              {% endif %}
             {% else %}
-              <small>Sin acción</small>
+              <span class="text-muted">Sin acción</span>
             {% endif %}
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center">No tienes postulaciones registradas.</td>
+          <td colspan="5" class="text-center">No tienes postulaciones registradas.</td>
         </tr>
         {% endfor %}
       </tbody>

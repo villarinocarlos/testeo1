@@ -38,5 +38,7 @@ urlpatterns = [
     path("seguimientos/eliminar/<str:seguimiento_id>/", views.eliminar_seguimiento, name="eliminar_seguimiento"),
     path("mis_seguimientos/", views.dashboard_seguimientos_alumno, name="mis_seguimientos"),
     path("dashboard_seguimientos/", views.dashboard_seguimientos, name="dashboard_seguimientos"),
+    path("mis_finalizaciones/", views.mis_finalizaciones, name="mis_finalizaciones"),
+     path("logs/", views.ver_logs, name="ver_logs"),
 ]
 

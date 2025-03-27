@@ -81,7 +81,14 @@
         </a>
       </li>
       {% endif %}
-
+      {% if request.session.rol == "Alumno" %}
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'documentos:mis_finalizaciones' %}">
+          <i class="fas fa-file-download"></i>
+          <span>Mis Finalizaciones</span>
+        </a>
+      </li>
+    {% endif %}
       <!-- Proyectos: Alumno ve catálogo; otros ven CRUD -->
       {% if request.session.rol == "Alumno" %}
       <li class="nav-item">
@@ -161,12 +168,14 @@
           <span>Documentos</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">
-          <i class="fas fa-clipboard-list"></i>
-          <span>Logs</span>
-        </a>
-      </li>
+      {% if request.session.rol == "Admin" %}
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'documentos:ver_logs' %}">
+      <i class="fas fa-clipboard-list"></i>
+      <span>Logs</span>
+    </a>
+  </li>
+{% endif %}
       {% endif %}
 
       <!-- Logout (para todos) -->

@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Carta de Finalización</title>
+  <style>
+    @page {
+      size: letter portrait;
+      margin: 1.2cm 1.2cm;
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      line-height: 1.3;
+      font-size: 10pt;
+    }
+    .container {
+      position: relative;
+    }
+    .header-diagonal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      overflow: hidden;
+    }
+    .yellow-diagonal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 40px;
+      background-color: #FAB913;
+      transform: skewY(-2deg);
+      transform-origin: top left;
+      z-index: 1;
+    }
+    .header {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      padding-top: 15px;
+      margin-bottom: 12px;
+    }
+    .logo {
+      width: 70px;
+      margin-right: 15px;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .logo-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1B1745;
+      margin: 0;
+    }
+    .logo-subtitle {
+      font-size: 9px;
+      color: #FAB913;
+      text-transform: uppercase;
+      font-weight: bold;
+      margin: 0;
+    }
+    .institution-info {
+      background-color: #1B1745;
+      color: white;
+      padding: 6px 15px;
+      margin-bottom: 0;
+      font-size: 9pt;
+      text-align: center;
+    }
+    .institution-subinfo {
+      background-color: #1B1745;
+      color: white;
+      padding: 5px 15px;
+      margin-bottom: 12px;
+      font-size: 8pt;
+      text-align: center;
+    }
+    .institution-info p, .institution-subinfo p {
+      margin: 2px 0;
+    }
+    .content {
+      padding: 0 10px;
+    }
+    .letter-body p {
+      margin: 6px 0;
+    }
+    .project-item {
+      display: flex;
+      margin-bottom: 6px;
+      background-color: #f9f9f9;
+    }
+    .project-item-bar {
+      background-color: #FAB913;
+      width: 6px;
+    }
+    .project-label {
+      font-weight: bold;
+      padding: 6px 8px;
+      width: 120px;
+    }
+    .project-value {
+      padding: 6px;
+      flex-grow: 1;
+    }
+    /* Sección de firmas actualizada: dos bloques lado a lado */
+    .signature {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sig-block {
+      width: 48%;
+      text-align: center;
+    }
+    .sig-line {
+      border-top: 1px solid #333;
+      margin-bottom: 5px;
+      width: 100%;
+    }
+    .footer {
+      position: relative;
+      background-color: #1B1745;
+      color: white;
+      text-align: center;
+      font-size: 8pt;
+      padding: 5px 0;
+      margin-top: 20px;
+    }
+    .footer p {
+      margin: 2px 0;
+    }
+    .footer-diagonal {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 25px;
+      overflow: hidden;
+    }
+    .yellow-diagonal-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 15px;
+      background-color: #FAB913;
+      transform: skewY(2deg);
+      transform-origin: bottom left;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Diseño diagonal -->
+    <div class="header-diagonal">
+      <div class="yellow-diagonal"></div>
+    </div>
+    
+    <!-- Header con logo -->
+    <div class="header">
+      <img class="logo" src="{% static 'img/logo.png' %}" alt="Logo UNID">
+      <div class="logo-text">
+        <h1 class="logo-title">UNID</h1>
+        <p class="logo-subtitle">Formando con valores</p>
+      </div>
+    </div>
+    
+    <div class="institution-info">
+      <p><strong>UNIVERSIDAD INTERAMERICANA PARA EL DESARROLLO - CAMPUS CAMPECHE</strong></p>
+    </div>
+    <div class="institution-subinfo">
+      <p>Av. Resurgimiento 611, Lazareto, 24030 San Francisco de Campeche, Campeche | Tel: +52 55 1234 5678</p>
+    </div>
+    
+    <!-- Contenido de la carta -->
+    <div class="content">
+      <div class="letter-body">
+        <p><strong>Estimado/a alumno,</strong></p>
+        
+        <p>
+          Por medio de la presente, la Universidad Interamericana para el Desarrollo (UNID) le informa que ha <strong>finalizado exitosamente</strong> su participación en el proyecto:
+        </p>
+        
+        <div class="project-details">
+          <div class="project-item">
+            <div class="project-item-bar"></div>
+            <div class="project-label">Título del Proyecto:</div>
+            <div class="project-value">{{ proyecto.titulo }}</div>
+          </div>
+          
+          <div class="project-item">
+            <div class="project-item-bar"></div>
+            <div class="project-label">Descripción:</div>
+            <div class="project-value">{{ proyecto.descripcion }}</div>
+          </div>
+          
+          <div class="project-item">
+            <div class="project-item-bar"></div>
+            <div class="project-label">Requisitos:</div>
+            <div class="project-value">{{ proyecto.requisitos }}</div>
+          </div>
+          
+          <div class="project-item">
+            <div class="project-item-bar"></div>
+            <div class="project-label">Empresa:</div>
+            <div class="project-value">{{ empresa.nombre }}</div>
+          </div>
+        </div>
+        
+        <p>
+          Esta carta certifica que usted ha culminado satisfactoriamente su período de prácticas profesionales y cumplido con los estándares establecidos tanto por UNID como por la empresa. Este documento servirá como constancia de finalización y respaldo para su desarrollo profesional.
+        </p>
+      </div>
+      
+      <!-- Sección de firmas (dos bloques lado a lado) -->
+      <div class="signature">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Asesor Interno</p>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <p>Asesor Externo</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>DoCenter - Gestión de Proyectos | www.unid.edu.mx</p>
+    </div>
+    
+    <div class="footer-diagonal">
+      <div class="yellow-diagonal-bottom"></div>
+    </div>
+  </div>
+</body>
+</html>

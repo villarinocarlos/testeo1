@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registro de Actividades - EduPrácticas{% endblock %}
+
+{% block extra_css %}
+<style>
+  .logs-container {
+    margin-top: 20px;
+  }
+  .logs-card {
+    border: 1px solid #0A2F58;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .logs-card-header {
+    background-color: #0A2F58;
+    color: #fff;
+    padding: 15px;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  .logs-card-body {
+    padding: 15px;
+    background-color: #f8f9fc;
+  }
+  .logs-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .logs-table th, .logs-table td {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+  }
+  .logs-table th {
+    background-color: #e6eef7;
+    color: #0A2F58;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+  .logs-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  .logs-table tbody tr:hover {
+    background-color: #d9e2f3;
+  }
+  .log-timestamp {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  .search-container {
+    margin-bottom: 15px;
+  }
+  .search-container .form-control {
+    width: 300px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+  .filter-container {
+    margin-bottom: 15px;
+  }
+  .pagination {
+    margin-top: 15px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container logs-container">
+  <div class="logs-card">
+    <div class="logs-card-header">
+      Registro de Actividades
+    </div>
+    <div class="logs-card-body">
+      <!-- Buscador y filtro -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="search-container">
+          <input type="text" id="searchInput" class="form-control" placeholder="Buscar actividad...">
+        </div>
+        <div class="filter-container">
+          <select id="actionFilter" class="form-select">
+            <option value="">Todas las acciones</option>
+            <option value="Creación">Creación</option>
+            <option value="Actualización">Actualización</option>
+            <option value="Eliminación">Eliminación</option>
+            <option value="Login">Login</option>
+          </select>
+        </div>
+      </div>
+      
+      {% if logs %}
+      <div class="table-responsive">
+        <table class="logs-table" id="logsTable">
+          <thead>
+            <tr>
+              <th>Acción</th>
+              <th>Usuario</th>
+              <th>Detalles</th>
+              <th>Fecha/Hora</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.action }}</td>
+              <td>{{ log.user }}</td>
+              <td>{{ log.details }}</td>
+              <td class="log-timestamp">{{ log.timestamp }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-center text-muted">No se han registrado actividades.</p>
+      {% endif %}
+      
+      <!-- Paginador -->
+      {% if logs.has_other_pages %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          {% if logs.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ logs.previous_page_number }}">&laquo; Anterior</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&laquo; Anterior</a>
+          </li>
+          {% endif %}
+          {% for num in logs.paginator.page_range %}
+            {% if logs.number == num %}
+            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if logs.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ logs.next_page_number }}">Siguiente &raquo;</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">Siguiente &raquo;</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const searchInput = document.getElementById("searchInput");
+    const actionFilter = document.getElementById("actionFilter");
+    const table = document.getElementById("logsTable").getElementsByTagName("tbody")[0];
+
+    function filterLogs() {
+      const searchText = searchInput.value.toLowerCase();
+      const selectedAction = actionFilter.value.toLowerCase();
+
+      for (let row of table.rows) {
+        const cells = row.cells;
+        let text = "";
+        for (let cell of cells) {
+          text += cell.textContent.toLowerCase() + " ";
+        }
+        let match = true;
+        if (searchText && !text.includes(searchText)) {
+          match = false;
+        }
+        if (selectedAction) {
+          const actionCell = cells[0].textContent.toLowerCase();
+          if (!actionCell.includes(selectedAction)) {
+            match = false;
+          }
+        }
+        row.style.display = match ? "" : "none";
+      }
+    }
+
+    searchInput.addEventListener("keyup", filterLogs);
+    actionFilter.addEventListener("change", filterLogs);
+  });
+</script>
+{% endblock %}

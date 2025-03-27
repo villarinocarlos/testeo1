@@ -5,24 +5,29 @@ import os
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.conf import settings
-def generar_pdf_xhtml2pdf(alumno, proyecto, empresa):
-    """
-    Renderiza la plantilla 'carta_template.html' con los datos del alumno, proyecto y empresa,
-    y genera un PDF usando xhtml2pdf.
-    Retorna la ruta temporal del PDF generado.
-    """
-    html_string = render_to_string("carta_template.html", {
+
+def generar_pdf_xhtml2pdf(alumno, proyecto, empresa, template_name="carta_aceptacion.html", extra_context=None):
+    if extra_context is None:
+        extra_context = {}
+    context = {
         "alumno": alumno,
         "proyecto": proyecto,
         "empresa": empresa,
-    })
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as output:
-        pisa_status = pisa.CreatePDF(html_string, dest=output)
-        if pisa_status.err:
-            raise Exception("Error al generar el PDF con xhtml2pdf.")
-        pdf_path = output.name
+    }
+    context.update(extra_context)
+    
+    html_string = render_to_string(template_name, context)
+    
+    # Usamos un archivo temporal para crear el PDF
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+        pisa_status = pisa.CreatePDF(html_string, dest=tmp_file)
+        tmp_file.flush()
+        tmp_file.seek(0)
+        pdf_path = tmp_file.name
+    
+    if pisa_status.err:
+        return None
     return pdf_path
-
 
 def subir_pdf_a_storage(pdf_path, destino):
     """

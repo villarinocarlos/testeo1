@@ -16,7 +16,19 @@
       "correo": "test2@gmail.com",
       "nombre": "XBOX",
       "rfc": "FAXD010101000",
-      "telefono": "9812088311"
+      "telefono": "9812078831"
+    },
+    "-OLq6deUm2fEWwsIghSw": {
+      "correo": "test3@gmail.com",
+      "nombre": "papeleria",
+      "rfc": "FAXD010141000",
+      "telefono": "9812078831"
+    },
+    "-OMIBcS6NfXUeNjUWWZ-": {
+      "correo": "empresario@gmail.com",
+      "nombre": "finalizacion",
+      "rfc": "FAFD010141088",
+      "telefono": "9815078834"
     }
   },
   "FCMTokens": {
@@ -27,6 +39,84 @@
       "fecha": "2025-03-14 10:00:00",
       "mensaje": "Un alumno se ha postulado a tu proyecto.",
       "rol": "Empresario"
+    },
+    "-OLq7QCmNRzsmkwR3mm5": {
+      "fecha": "2025-03-21 00:36:56",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMI02iu63jLi-ML53pl": {
+      "fecha": "2025-03-26 15:13:44",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMI4cSNW2uKaPgPQVuh": {
+      "fecha": "2025-03-26 15:33:43",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMI4hOqtvsIwmgOTM1L": {
+      "fecha": "2025-03-26 15:34:03",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMI69-biy7RM6RoG9WB": {
+      "fecha": "2025-03-26 15:40:23",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMI7kd2Phl3_HY0LMQW": {
+      "fecha": "2025-03-26 15:47:23",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMI7pg6rkKOPn_8ftsK": {
+      "fecha": "2025-03-26 15:47:44",
+      "mensaje": "Tu postulación ha sido aceptada.",
+      "rol": "Alumno"
+    },
+    "-OMI7riTv5tmj4RYa4T4": {
+      "fecha": "2025-03-26 15:47:52",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMIBvEv205wYIb1zaBV": {
+      "fecha": "2025-03-26 16:05:35",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMIC03DkhUwpyDoXwiH": {
+      "fecha": "2025-03-26 16:05:59",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMIFY8Rgwlyykaz-yf6": {
+      "fecha": "2025-03-26 16:21:25",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMIFah-gdoXfofB2d8_": {
+      "fecha": "2025-03-26 16:21:40",
+      "mensaje": "Tu postulación ha sido rechazada.",
+      "rol": "Alumno"
+    },
+    "-OMIHbOVDIL35Jpj_yFK": {
+      "fecha": "2025-03-26 16:30:27",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    },
+    "-OMINReVEcLBK1G4QFoJ": {
+      "fecha": "2025-03-26 16:55:56",
+      "mensaje": "Un alumno se ha postulado a tu proyecto.",
+      "rol": "Empresario"
+    }
+  },
+  "Logs": {
+    "-Log001": {
+      "timestamp": "2025-03-14 10:00:00",
+      "usuario": "test@gmail.com",
+      "accion": "Creación de postulación",
+      "detalles": "El alumno test@gmail.com se postuló al proyecto 'empresa super importante'."
     }
   },
   "Postulaciones": {
@@ -43,7 +133,7 @@
     "-OKc4ZCk73t-w3BJsvlK": {
       "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
       "carrera": "Ingeniería en Sistemas",
-      "estado": "Aceptada",
+      "estado": "Rechazada",
       "fecha_postulacion": "2025-03-05",
       "habilidades": "Python, Ingles",
       "motivo_rechazo": "",
@@ -91,6 +181,78 @@
       "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
       "razon_interes": "fffff",
       "url_carta": "/media/cartas/carta_-OKi3Mo3EiDEpOKR6Hhz_RPTElvx.pdf"
+    },
+    "-OLq7Q90X0cWjG4Id_qH": {
+      "alumno_id": "-OLq6FumVLLHpPlWZIqA",
+      "carrera": "sistemas",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-21",
+      "habilidades": "se programar",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OLq6vPRHXis44AwF3Ve",
+      "razon_interes": "quiero trabajo"
+    },
+    "-OMI4cNoAk_qM2mOKYEv": {
+      "alumno_id": "-OLq6FumVLLHpPlWZIqA",
+      "carrera": "",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
+      "razon_interes": ""
+    },
+    "-OMI7kZM1JtIG9SpT3x4": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "carrera": "",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OLq6vPRHXis44AwF3Ve",
+      "razon_interes": ""
+    },
+    "-OMIBvAN6Xl7FTJsQtvB": {
+      "alumno_id": "-OMIBEMdkAcHEoWNj1bl",
+      "carrera": "",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OMIBj5azPsw58CkbbCd",
+      "razon_interes": ""
+    },
+    "-OMIFY3iq-bRXSgKRC3J": {
+      "alumno_id": "-OMIBEMdkAcHEoWNj1bl",
+      "carrera": "",
+      "estado": "Rechazada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK4i4r1wkNJOwi9SACI",
+      "razon_interes": ""
+    },
+    "-OMIHbK6C9SbrCyU9efg": {
+      "alumno_id": "-OMIBEMdkAcHEoWNj1bl",
+      "carrera": "",
+      "estado": "Finalizada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OK2XAoMVzfMogr4Yc4c",
+      "razon_interes": "",
+      "url_carta_finalizacion": "/media/cartas/carta_finalizacion_-OMIHbK6C9SbrCyU9efg_bN0GoKm.pdf"
+    },
+    "-OMINRa5BfR1uz6hDvuH": {
+      "alumno_id": "-OKbYuqZ4_Uc-8zKx3Gc",
+      "carrera": "",
+      "estado": "Finalizada",
+      "fecha_postulacion": "2025-03-26",
+      "habilidades": "",
+      "motivo_rechazo": "",
+      "proyecto_id": "-OMIBj5azPsw58CkbbCd",
+      "razon_interes": "",
+      "url_carta_finalizacion": "/media/cartas/carta_finalizacion_-OMINRa5BfR1uz6hDvuH.pdf"
     },
     "-Post001": {
       "alumno_id": "-Usr003",
@@ -153,6 +315,40 @@
       "requisitos": "flutter,programacion,sql",
       "titulo": "Programador experimentado",
       "vacantes": 2
+    },
+    "-OLq6vPRHXis44AwF3Ve": {
+      "descripcion": "desarrollo de app mobil",
+      "empresa_id": "-OLq6deUm2fEWwsIghSw",
+      "estado": "Abierto",
+      "fecha_fin": "2025-03-29",
+      "fecha_inicio": "2025-03-21",
+      "requisitos": "python, flutter, sql",
+      "titulo": "papeleria",
+      "vacantes": 2
+    },
+    "-OMIBj5azPsw58CkbbCd": {
+      "descripcion": "hola hola",
+      "empresa_id": "-OMIBcS6NfXUeNjUWWZ-",
+      "estado": "Abierto",
+      "fecha_fin": "2025-06-19",
+      "fecha_inicio": "2025-03-26",
+      "requisitos": "python,excel",
+      "titulo": "finalizacion",
+      "vacantes": 3
+    }
+  },
+  "Seguimientos": {
+    "-OLjfd4wy49yaT2bhWVG": {
+      "avances": "avanzo en su proyecto",
+      "evidencias": [
+        {
+          "nombre": "unid_logo.png",
+          "url": "/media/seguimientos/unid_logo.png"
+        }
+      ],
+      "fecha": "2025-03-20",
+      "observaciones": "muy bien",
+      "postulacion_id": "-OKc4ZCk73t-w3BJsvlK"
     }
   },
   "Usuarios": {
@@ -179,6 +375,34 @@
       "semestre": 7,
       "telefono": "9812028831"
     },
+    "-OLq5ZIgjX1sUu-xSYvg": {
+      "contraseña": "Admin1",
+      "correo": "test3@gmail.com",
+      "rol": "Empresario"
+    },
+    "-OLq6FumVLLHpPlWZIqA": {
+      "contraseña": "Admin1",
+      "correo": "test4@gmail.com",
+      "creditos": 200,
+      "matricula": "1234567860",
+      "rol": "Alumno",
+      "semestre": 8,
+      "telefono": "9816078831"
+    },
+    "-OMIBEMdkAcHEoWNj1bl": {
+      "contraseña": "Admin1",
+      "correo": "alumno@gmail.com",
+      "creditos": 200,
+      "matricula": "1234565891",
+      "rol": "Alumno",
+      "semestre": 8,
+      "telefono": "9815078831"
+    },
+    "-OMIBIjSUVltcpqFG7K2": {
+      "contraseña": "Admin1",
+      "correo": "empresario@gmail.com",
+      "rol": "Empresario"
+    },
     "-Usr001": {
       "contraseña": "Admin1",
       "correo": "villarinocarlos75@gmail.com",
@@ -190,27 +414,6 @@
       "correo": "sergio@gmail.com",
       "nombre": "Sergio García",
       "rol": "Empresario"
-    }
-  },
-  "Seguimientos": {
-    "-Seg001": {
-      "postulacion_id": "-OKc4ZCk73t-w3BJsvlK",
-      "fecha": "2025-05-10",
-      "avances": "El alumno completó la primera fase del proyecto",
-      "observaciones": "Debe mejorar la documentación",
-      "evidencias": [
-        {
-          "nombre": "captura_tareas.png",
-          "url": "/media/seguimientos/captura_tareas.png"
-        }
-      ]
-    },
-    "-Seg002": {
-      "postulacion_id": "-OKi3Mo3EiDEpOKR6Hhz",
-      "fecha": "2025-05-12",
-      "avances": "Se integró la parte de frontend con la API",
-      "observaciones": "Buen trabajo en equipo",
-      "evidencias": []
     }
   }
 }
