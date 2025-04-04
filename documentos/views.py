@@ -571,6 +571,7 @@ def crear_postulacion(request, proyecto_id):
         return redirect('documentos:login')
 
     if request.method == "POST":
+        # Obtener perfil del alumno usando su correo de sesión
         correo_alumno = request.session.get('correo')
         alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
         if not alumno_data:
@@ -578,16 +579,19 @@ def crear_postulacion(request, proyecto_id):
             return redirect('documentos:dashboard')
         alumno_key = list(alumno_data.keys())[0]
 
+        # Verificar que el alumno no se haya postulado ya al mismo proyecto
         postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
         for key, post in postulaciones_data.items():
             if post.get("proyecto_id") == proyecto_id:
                 messages.error(request, "Ya te has postulado a este proyecto.")
                 return redirect('documentos:mis_postulaciones')
 
+        # Recoger datos adicionales del formulario
         carrera = request.POST.get('carrera', '').strip()
         habilidades = request.POST.get('habilidades', '').strip()
         razon_interes = request.POST.get('razon_interes', '').strip()
 
+        # Crear la nueva postulación
         nueva_postulacion = {
             "alumno_id": alumno_key,
             "proyecto_id": proyecto_id,
@@ -602,14 +606,24 @@ def crear_postulacion(request, proyecto_id):
         log_event("Creación de postulación", request.session.get("correo"), f"Postulación creada para proyecto {proyecto_id}")
         messages.success(request, "Te has postulado correctamente.")
 
-        # Guardar notificación para el empresario:
+        # Actualizar las vacantes del proyecto:
+        proyecto_data = db.child("Proyectos").child(proyecto_id).get().val()
+        if proyecto_data:
+            current_vacantes = int(proyecto_data.get("vacantes", 0))
+            new_vacantes = current_vacantes - 1
+            if new_vacantes > 0:
+                db.child("Proyectos").child(proyecto_id).update({"vacantes": new_vacantes})
+            else:
+                # Si no quedan vacantes, se actualiza el estado a "Cerrado" y se pone vacantes en 0
+                db.child("Proyectos").child(proyecto_id).update({"vacantes": 0, "estado": "Cerrado"})
+
+        # Enviar notificación al empresario correspondiente
         proyecto = db.child("Proyectos").child(proyecto_id).get().val() or {}
         empresa_id = proyecto.get("empresa_id")
         if empresa_id:
             empresa_data = db.child("Empresas").child(empresa_id).get().val() or {}
             correo_empresario = empresa_data.get("correo")
             if correo_empresario:
-                # Almacena la notificación en el nodo "Notificaciones" con rol "Empresario"
                 notificacion = {
                     "rol": "Empresario",
                     "mensaje": "Un alumno se ha postulado a tu proyecto.",
@@ -725,7 +739,6 @@ def actualizar_postulacion(request, postulacion_id):
         db.child("Postulaciones").child(postulacion_id).update(updates)
         log_event("Actualización de postulación", request.session.get("correo"), f"Postulación {postulacion_id} actualizada a {nuevo_estado}")
 
-        
         # Notificar para estados Aceptada y Rechazada
         if nuevo_estado in ["Aceptada", "Rechazada"]:
             alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
@@ -739,7 +752,15 @@ def actualizar_postulacion(request, postulacion_id):
                     }
                     db.child("Notificaciones").push(notificacion)
         
-        # Si se actualiza a "Finalizada", generar la carta de finalización
+        # Si se actualiza a "Aceptada", decrementa vacantes en el proyecto
+        if nuevo_estado == "Aceptada":
+            proyecto = db.child("Proyectos").child(post_data["proyecto_id"]).get().val() or {}
+            vacantes = int(proyecto.get("vacantes", 0))
+            if vacantes > 0:
+                vacantes -= 1
+                db.child("Proyectos").child(post_data["proyecto_id"]).update({"vacantes": vacantes})
+        
+        # Si se actualiza a "Finalizada", genera la carta de finalización
         if nuevo_estado == "Finalizada":
             alumno = db.child("Usuarios").child(post_data["alumno_id"]).get().val()
             proyecto = db.child("Proyectos").child(post_data["proyecto_id"]).get().val()
@@ -749,26 +770,22 @@ def actualizar_postulacion(request, postulacion_id):
                 "current_date": datetime.now().strftime("%Y-%m-%d"),
                 "current_year": datetime.now().year
             }
-            # Genera el PDF usando el template "carta_finalizacion.html"
-            pdf_path = generar_pdf_xhtml2pdf(alumno, proyecto, empresa, 
-                                             template_name="carta_finalizacion.html", 
+            pdf_path = generar_pdf_xhtml2pdf(alumno, proyecto, empresa,
+                                             template_name="carta_finalizacion.html",
                                              extra_context=extra_context)
-            if pdf_path is None:
-                messages.error(request, "Ocurrió un error al generar la carta de finalización.")
-            else:
-                relative_path = f"cartas/carta_finalizacion_{postulacion_id}.pdf"
-                full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
-                os.makedirs(os.path.dirname(full_path), exist_ok=True)
-                with open(pdf_path, "rb") as f:
-                    file_content = File(f)
-                    saved_path = default_storage.save(relative_path, file_content)
-                url_pdf = settings.MEDIA_URL + saved_path
-                db.child("Postulaciones").child(postulacion_id).update({"url_carta_finalizacion": url_pdf})
+            
+            relative_path = f"cartas/carta_finalizacion_{postulacion_id}.pdf"
+            full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(pdf_path, "rb") as f:
+                file_content = File(f)
+                saved_path = default_storage.save(relative_path, file_content)
+            url_pdf = settings.MEDIA_URL + saved_path
+            db.child("Postulaciones").child(postulacion_id).update({"url_carta_finalizacion": url_pdf})
         
         messages.success(request, "La postulación se ha actualizado correctamente.")
         return redirect('documentos:crud_postulaciones')
     else:
-        # Usamos el template existente de edición, ya que "detalle_postulacion.html" no existe.
         return render(request, "editar_postulacion.html", {
             "postulacion": post_data,
             "postulacion_id": postulacion_id
@@ -805,10 +822,10 @@ def cancelar_postulacion(request, postulacion_id):
     return redirect('documentos:mis_postulaciones')
 
     
-@alumno_required
+
 @alumno_required
 def catalogo_proyectos(request):
-    # Primero obtenemos el perfil del alumno a partir de su correo en la sesión
+    # 1. Obtener perfil del alumno
     correo_alumno = request.session.get("correo")
     alumno_data = db.child("Usuarios").order_by_child("correo").equal_to(correo_alumno).get().val() or {}
     if not alumno_data:
@@ -816,23 +833,28 @@ def catalogo_proyectos(request):
         return redirect("documentos:dashboard")
     alumno_key = list(alumno_data.keys())[0]
 
-    # Consultamos todas las postulaciones del alumno
+    # 2. Consultar todas las postulaciones del alumno
     postulaciones_data = db.child("Postulaciones").order_by_child("alumno_id").equal_to(alumno_key).get().val() or {}
     for key, post in postulaciones_data.items():
-        # Si tiene una postulación en estado Pendiente o Aceptada, redirigimos
+        # Si tiene una postulación en estado Pendiente o Aceptada, se le redirige
         if post.get("estado") in ["Pendiente", "Aceptada"]:
             messages.error(request, "Ya estás en un proyecto y no puedes ver proyectos disponibles.")
             return redirect("documentos:dashboard")
     
-    # Si no tiene ninguna, mostramos los proyectos abiertos
+    # 3. Obtener proyectos abiertos y con vacantes disponibles
     proyectos_data = db.child("Proyectos").order_by_child("estado").equal_to("Abierto").get().val() or {}
     proyectos_list = []
     for key, proyecto in proyectos_data.items():
+        # Solo se muestran los proyectos con vacantes > 0
+        if int(proyecto.get("vacantes", 0)) <= 0:
+            continue
         proyecto["id"] = key
+        # Obtener el nombre de la empresa asociada
         empresa = db.child("Empresas").child(proyecto.get("empresa_id")).get().val() or {}
         proyecto["empresa_nombre"] = empresa.get("nombre", "Empresa desconocida")
         proyectos_list.append(proyecto)
     
+    # 4. Paginación
     paginator = Paginator(proyectos_list, 10)
     page = request.GET.get("page")
     proyectos = paginator.get_page(page)
@@ -1223,3 +1245,33 @@ def ver_logs(request):
     page = request.GET.get('page')
     paginated_logs = paginator.get_page(page)
     return render(request, "logs_admin.html", {"logs": paginated_logs})
+
+@csrf_exempt
+def actualizar_matricula_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Solo se permiten peticiones POST."}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "JSON inválido."}, status=400)
+    
+    correo = data.get("correo", "").strip()
+    matricula = data.get("matricula", "").strip()
+
+    if not correo or not matricula:
+        return JsonResponse({"error": "Los campos 'correo' y 'matricula' son obligatorios."}, status=400)
+    
+    # Busca el usuario en db por correo
+    usuarios = db.child("Usuarios").order_by_child("correo").equal_to(correo).get().val() or {}
+    if not usuarios:
+        return JsonResponse({"error": "Usuario no encontrado."}, status=404)
+    
+    uid = list(usuarios.keys())[0]
+    
+    try:
+        db.child("Usuarios").child(uid).update({"matricula": matricula})
+    except Exception as e:
+        return JsonResponse({"error": f"Error al actualizar la matrícula: {str(e)}"}, status=500)
+    
+    return JsonResponse({"success": True, "message": "Matrícula actualizada correctamente."})

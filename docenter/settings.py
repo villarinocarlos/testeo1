@@ -12,17 +12,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Application definition
+
 INSTALLED_APPS = [
-    # Apps de Django
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',      # Para Django Channels
-    'documentos',    # Tu aplicación principal
+    'channels',      
+    'documentos',    
 ]
 
 MIDDLEWARE = [
