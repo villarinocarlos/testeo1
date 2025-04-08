@@ -101,21 +101,74 @@ def logout_view(request):
 
 @no_alumno_required
 def crud_empresas(request):
-    empresas = db.child("Empresas").get().val()
+    empresas = db.child("Empresas").get().val() or {}
     lista_empresas = []
-
+    rol = request.session.get('rol')
+    correo_usuario = request.session.get('correo')
+    
     if empresas:
         for key, empresa in empresas.items():
             empresa['id'] = key
-            # Asegurar que siempre haya un número de teléfono mostrado
+            # Se asegura que se muestre un número de teléfono (o valor por defecto)
             empresa['telefono'] = empresa.get('telefono') or empresa.get('contacto', 'No disponible')
-            lista_empresas.append(empresa)
-
+            # Si el usuario es Empresario o Empresa, solo se incluye la empresa cuyo correo coincida
+            if rol in ['Empresa', 'Empresario']:
+                if empresa.get("correo") == correo_usuario:
+                    lista_empresas.append(empresa)
+            else:
+                lista_empresas.append(empresa)
+    
     return render(request, 'crud_empresas.html', {'empresas': lista_empresas})
 
-
+@no_alumno_required
 def crud_proyectos(request):
-    return render(request, 'crud_proyectos.html')
+    if 'correo' not in request.session:
+        messages.error(request, "Debes iniciar sesión.")
+        return redirect('documentos:login')
+
+    rol = request.session.get('rol')
+    correo_usuario = request.session.get('correo')
+
+    # Obtiene todos los proyectos
+    proyectos_data = db.child("Proyectos").get().val() or {}
+    proyectos_list = []
+    for key, val in proyectos_data.items():
+        val['id'] = key
+        # Obtiene los datos de la empresa asociada
+        empresa_data = db.child("Empresas").child(val.get("empresa_id")).get().val()
+        if empresa_data:
+            val['empresa_nombre'] = empresa_data.get('nombre', 'Sin Nombre')
+        else:
+            val['empresa_nombre'] = "Sin Empresa"
+        if "estado" not in val:
+            val["estado"] = "Abierto"
+        proyectos_list.append(val)
+
+    # Si el usuario es Empresa o Empresario, filtra solo los proyectos de su empresa
+    if rol in ['Empresa', 'Empresario']:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val() or {}
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+            proyectos_list = [p for p in proyectos_list if p.get("empresa_id") == empresa_id]
+        else:
+            proyectos_list = []  # Si no tiene empresa asociada, no se muestra nada
+
+    paginator = Paginator(proyectos_list, 10)
+    page = request.GET.get('page')
+    proyectos = paginator.get_page(page)
+
+    # Solo para Admin se cargan todas las empresas (para filtros, etc.)
+    empresas = []
+    if rol == 'Admin':
+        empresas_data = db.child("Empresas").get().val() or {}
+        for key, val in empresas_data.items():
+            empresas.append({'id': key, 'nombre': val.get('nombre', 'Sin Nombre')})
+    
+    context = {
+        'proyectos': proyectos,
+        'empresas': empresas,
+    }
+    return render(request, 'crud_proyectos.html', context)
 
 @admin_required
 def crud_usuarios(request):
@@ -915,18 +968,31 @@ def limpiar_notificaciones(request):
 
 @admin_o_empresa_required
 def listar_seguimientos(request):
-    """
-    Lista todos los seguimientos en formato de tabla para gestión.
-    Se muestra el correo del alumno (participante) en lugar del ID de postulación.
-    """
+    rol = request.session.get("rol")
+    correo_usuario = request.session.get("correo")
+    
+    # Si el usuario es empresario, obtener su empresa
+    empresa_id = None
+    if rol in ["Empresa", "Empresario"]:
+        empresa_data = db.child("Empresas").order_by_child("correo").equal_to(correo_usuario).get().val() or {}
+        if empresa_data:
+            empresa_id = list(empresa_data.keys())[0]
+    
     seguimientos_data = db.child("Seguimientos").get().val() or {}
     lista_seguimientos = []
     for key, seg in seguimientos_data.items():
         seg["id"] = key
-        
         postulacion = db.child("Postulaciones").child(seg.get("postulacion_id", "")).get().val() or {}
+        # Si es empresario, filtrar por proyecto que pertenezca a su empresa
+        if rol in ["Empresa", "Empresario"]:
+            proyecto = db.child("Proyectos").child(postulacion.get("proyecto_id", "")).get().val() or {}
+            if proyecto.get("empresa_id") != empresa_id:
+                continue
+        # Agregar datos para mostrar: correo del alumno, título del proyecto, etc.
         alumno = db.child("Usuarios").child(postulacion.get("alumno_id", "")).get().val() or {}
         seg["alumno_correo"] = alumno.get("correo", "Sin correo")
+        proyecto = db.child("Proyectos").child(postulacion.get("proyecto_id", "")).get().val() or {}
+        seg["proyecto_titulo"] = proyecto.get("titulo", "Proyecto desconocido")
         lista_seguimientos.append(seg)
     
     paginator = Paginator(lista_seguimientos, 10)
